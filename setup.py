@@ -25,7 +25,8 @@ amg_core_headers = ['evolution_strength',
                     'linalg',
                     'relaxation',
                     'ruge_stuben',
-                    'smoothed_aggregation']
+                    'smoothed_aggregation',
+                    'sparse']
 
 ext_modules = [
     Pybind11Extension(f'pyamg.amg_core.{f}',
