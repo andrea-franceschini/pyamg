@@ -338,8 +338,23 @@ class MultilevelSolver:
 
         return LinearOperator(shape, matvec, dtype=dtype)
 
+    def _enable_omp(self):
+        """Enable OpenMP (if available) by calling pyamg.amg_core.sparse.csr_matvec
+
+        See Also
+        --------
+        scipy.sparse.csr.csr_matvec, pyamg.amg_core.sparse.csr_matvec, pyamg.util.sparse.csr
+        """
+        import pyamg.util
+        for l in self.levels:
+            l.A = pyamg.util.sparse.csr(l.A)
+            if hasattr(l, 'P'):
+                l.P = pyamg.util.sparse.csr(l.P)
+            if hasattr(l, 'R'):
+                l.R = pyamg.util.sparse.csr(l.R)
+
     def solve(self, b, x0=None, tol=1e-5, maxiter=100, cycle='V', accel=None,
-              callback=None, residuals=None, return_info=False):
+              callback=None, residuals=None, return_info=False, openmp=False):
         """Execute multigrid cycling.
 
         Parameters
@@ -403,6 +418,9 @@ class MultilevelSolver:
         >>> x = ml.solve(b, tol=1e-12, residuals=residuals) # standalone solver
 
         """
+        if openmp:
+            self._enable_omp()
+
         if x0 is None:
             x = np.zeros_like(b)
         else:
