@@ -31,7 +31,7 @@ from .smoothed_aggregation import (symmetric_strength_of_connection, standard_ag
                                    satisfy_constraints_helper, calc_BtB,
                                    incomplete_mat_mult_bsr, truncate_rows_csr)
 
-from .sparse import csr_matvec
+from .sparse import csr_matvec, omp_info
 
 __all__ = [
     'apply_absolute_distance_filter',
@@ -94,5 +94,6 @@ __all__ = [
     'incomplete_mat_mult_bsr',
     'truncate_rows_csr'
     #
-    'csr_matvec'
+    'csr_matvec',
+    'omp_info'
 ]
