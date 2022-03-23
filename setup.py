@@ -32,6 +32,11 @@ for cflag, lflag in [('-fopenmp', '-fopenmp'),
     except:
         openmp = False
 
+print('------------------------------------------')
+print(extra_compile_args)
+print(extra_link_args)
+print('------------------------------------------')
+
 amg_core_headers = ['evolution_strength',
                     'graph',
                     'krylov',
