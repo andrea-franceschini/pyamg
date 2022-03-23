@@ -92,7 +92,7 @@ __all__ = [
     'satisfy_constraints_helper',
     'calc_BtB',
     'incomplete_mat_mult_bsr',
-    'truncate_rows_csr'
+    'truncate_rows_csr',
     #
     'csr_matvec',
     'omp_info'
