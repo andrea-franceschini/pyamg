@@ -30,6 +30,7 @@ from .smoothed_aggregation import (symmetric_strength_of_connection, standard_ag
                                    fit_candidates,
                                    satisfy_constraints_helper, calc_BtB,
                                    incomplete_mat_mult_bsr, truncate_rows_csr)
+from .sfsai_nsy import sfsai_nsy
 
 __all__ = [
     'apply_absolute_distance_filter',
@@ -91,4 +92,6 @@ __all__ = [
     'calc_BtB',
     'incomplete_mat_mult_bsr',
     'truncate_rows_csr'
+    #
+    'sfsai_nsy'
 ]

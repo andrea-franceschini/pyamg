@@ -98,6 +98,11 @@ instantiate:
   functions:
     - csr_matvec
 
+- types:
+    - [int,double]
+  functions:
+    - sfsai_nsy
+
 remaps:
     - fit_candidates_real: fit_candidates
     - fit_candidates_complex: fit_candidates

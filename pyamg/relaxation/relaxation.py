@@ -1076,3 +1076,30 @@ def schwarz_parameters(A, subdomain=None, subdomain_ptr=None,
     A.schwarz_parameters = (subdomain, subdomain_ptr, inv_subblock,
                             inv_subblock_ptr)
     return A.schwarz_parameters
+
+def sfsai_nsy(A, kpow=100, nnzr_max=100, tau_pref=0.01, tau_post=0.0):
+
+    nn = A.shape[0]
+    nt = A.nnz
+    iat = A.indptr
+    ja = A.indices
+    coef = A.data
+    # Allocate data structures for FL and FU
+    nt_FL = nt_FU = nn*nnzr_max
+    iat_FL = np.empty((nn+1,), dtype=np.int32)
+    ja_FL = np.empty((nt_FL,), dtype=np.int32)
+    coef_FL = np.empty((nt_FL,), dtype=float)
+    iat_FU = np.empty((nn+1,), dtype=np.int32)
+    ja_FU = np.empty((nt_FU,), dtype=np.int32)
+    coef_FU = np.empty((nt_FU,), dtype=float)
+    ierr = amg_core.sfsai_nsy(kpow,nnzr_max,tau_pref,tau_post,nn,nt,iat,ja,coef,
+                              iat_FL,ja_FL,coef_FL,iat_FU,ja_FU,coef_FU)
+    if (ierr != 0):
+        raise ValueError('Error in sfsai_nsy')
+        return -1
+
+    # Create CSR matrices
+    FL = sparse.csr_matrix((coef_FL, ja_FL, iat_FL), shape=(nn, nn))
+    FU = sparse.csr_matrix((coef_FU, ja_FU, iat_FU), shape=(nn, nn))
+
+    return FL, FU

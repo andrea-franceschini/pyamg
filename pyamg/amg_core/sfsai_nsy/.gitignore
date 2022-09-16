@@ -1,0 +1,9 @@
+*.o
+a.out
+example/NSYPAT/
+NSY_for/
+example/Low_Patt.csr
+example/clip_59.bin
+example/prec_FL.csr
+example/prec_FU.csr
+example/Cubo_4820.csr

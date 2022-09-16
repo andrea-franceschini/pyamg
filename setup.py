@@ -34,6 +34,23 @@ ext_modules = [
     for f in amg_core_headers]
 
 ext_modules += [
+    Pybind11Extension('pyamg.amg_core.sfsai_nsy',
+                      sources=['pyamg/amg_core/sfsai_nsy_bind.cpp',
+                               'pyamg/amg_core/sfsai_nsy/compress_nsy_sfsai.cpp',
+                               'pyamg/amg_core/sfsai_nsy/cpt_nsy_sfsai_coef.cpp',
+                               'pyamg/amg_core/sfsai_nsy/fsai_ScalFact.cpp',
+                               'pyamg/amg_core/sfsai_nsy/gather_fullsys.cpp',
+                               'pyamg/amg_core/sfsai_nsy/iheapsort.cpp',
+                               'pyamg/amg_core/sfsai_nsy/merge_row_patt.cpp',
+                               'pyamg/amg_core/sfsai_nsy/mk_pattern.cpp',
+                               'pyamg/amg_core/sfsai_nsy/power_patt.cpp',
+                               'pyamg/amg_core/sfsai_nsy/transp_Patt.cpp'],
+                      include_dirs=['pyamg/amg_core/sfsai_nsy'],
+                      libraries=['lapacke'],
+                     )
+    ]
+
+ext_modules += [
     Pybind11Extension('pyamg.amg_core.tests.bind_examples',
                       sources=['pyamg/amg_core/tests/bind_examples_bind.cpp'],
                      )

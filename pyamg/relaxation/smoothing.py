@@ -119,6 +119,7 @@ def change_smoothers(ml, presmoother, postsmoother):
         gmres
         cgne
         cgnr
+        sfsai_nsy
         schwarz
         strength_based_schwarz
         None
@@ -310,7 +311,6 @@ def change_smoothers(ml, presmoother, postsmoother):
                                             ('backward', 'forward'),
                                             ('symmetric', 'symmetric')):
                     ml.symmetric_smoothing = False
-
     else:
         mid_len = min_len
 
@@ -683,6 +683,57 @@ def setup_cgnr(lvl, tol=1e-12, maxiter=1, M=None, callback=None,
     return smoother
 
 
+def solveSystem( A, FL, FU, tol = 1.e-8, restart = 100, maxiter = 1000, plot = True ):
+    def applyFUFL(x):
+        return FU*(FL*x)
+    M = sparse.linalg.LinearOperator(FL.shape, applyFUFL, dtype=FL.dtype)
+
+    # Create random solution and relative rhs
+    nn = A.shape[0]
+    sol = np.random.RandomState(123456).rand(nn,1)
+    b = A*sol
+
+    # Solve without a preconditioner
+    residuals1 = []
+    cg(A, b, x0=None, tol=tol, maxiter=maxiter, M=M,
+       callback=None, residuals=residuals1 )
+    residuals1 = residuals1 / residuals1[0]
+    niter1 = len(residuals1)
+    print(niter1)
+
+
+def setup_sfsai_nsy(lvl, iterations=DEFAULT_NITER, sweep=DEFAULT_SWEEP,
+                    omega=1.0, kpow=100, nnzr_max=100, tau_pref=0.01, tau_post=0.0):
+    """Set up static nonsymmetric FSAI smoothing."""
+
+    matrix_asformat(lvl, 'A', 'csr')
+    FL, FU = relaxation.sfsai_nsy(lvl.Acsr, kpow, nnzr_max, tau_pref, tau_post)
+
+    # Compute omega
+    def applyFLAFU(x):
+        return FL*(lvl.Acsr*(FU*x))
+    FLAFU = LinearOperator(lvl.Acsr.shape, applyFLAFU, dtype=lvl.Acsr.dtype)
+    vals = sparse.linalg.eigs(FLAFU, k=1, which='LR', maxiter=100, tol=1.e-3, return_eigenvectors=False)
+    vals = np.real_if_close(vals)
+    print("Max eig: ", vals[0])
+
+    #solveSystem( lvl.Acsr, FL, FU )
+
+    # Attention: has to work as both pre and post smoother
+    # For pre smoothing, x has to be initialized to zeros
+    if (vals[0] > 2.0):
+        omega = 1.9 / vals[0]
+        def smoother(A, x, b):
+            for i in range(0, iterations):
+                x += omega*(FU*(FL*(b - A*x)))
+    else:
+        def smoother(A, x, b):
+            for i in range(0, iterations):
+                x += (FU*(FL*(b - A*x)))
+
+    return smoother
+
+
 def setup_none(lvl):
     """Set up default, empty smoother."""
     def smoother(A, x, b):
@@ -712,6 +763,7 @@ def _setup_call(fn):
         'cg':                     setup_cg,
         'cgne':                   setup_cgne,
         'cgnr':                   setup_cgnr,
+        'sfsai_nsy':              setup_sfsai_nsy,
         'none':                   setup_none,
     }
 
