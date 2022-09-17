@@ -102,6 +102,7 @@ instantiate:
     - [int,double]
   functions:
     - sfsai_nsy
+    - cptEMIN
 
 remaps:
     - fit_candidates_real: fit_candidates

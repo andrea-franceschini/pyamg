@@ -32,6 +32,8 @@ from .smoothed_aggregation import (symmetric_strength_of_connection, standard_ag
                                    incomplete_mat_mult_bsr, truncate_rows_csr)
 from .sfsai_nsy import sfsai_nsy
 
+from .cptEMIN import cptEMIN
+
 __all__ = [
     'apply_absolute_distance_filter',
     'apply_distance_filter',

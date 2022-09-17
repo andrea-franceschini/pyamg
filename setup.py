@@ -51,6 +51,40 @@ ext_modules += [
     ]
 
 ext_modules += [
+    Pybind11Extension('pyamg.amg_core.cptEMIN',
+                      sources=['pyamg/amg_core/cptEMIN_bind.cpp',
+                               'pyamg/amg_core/cptEMIN/apply_perm.cpp',
+                               'pyamg/amg_core/cptEMIN/copy_Prol.cpp',
+                               'pyamg/amg_core/cptEMIN/count_rowterms.cpp',
+                               'pyamg/amg_core/cptEMIN/cpt_Trace_Acc.cpp',
+                               'pyamg/amg_core/cptEMIN/ddot_par.cpp',
+                               'pyamg/amg_core/cptEMIN/DEFL_PCG_matfree.cpp',
+                               'pyamg/amg_core/cptEMIN/dnrm2_par.cpp',
+                               'pyamg/amg_core/cptEMIN/EMIN_ImpProl.cpp',
+                               'pyamg/amg_core/cptEMIN/EMIN_matfree.cpp',
+                               'pyamg/amg_core/cptEMIN/gather_B_dump.cpp',
+                               'pyamg/amg_core/cptEMIN/gather_B_QR.cpp',
+                               'pyamg/amg_core/cptEMIN/gather_f.cpp',
+                               'pyamg/amg_core/cptEMIN/KP_spmat.cpp',
+                               'pyamg/amg_core/cptEMIN/LinvP_spmat.cpp',
+                               'pyamg/amg_core/cptEMIN/load_Jacobi.cpp',
+                               'pyamg/amg_core/cptEMIN/mkiat_Tglo.cpp',
+                               'pyamg/amg_core/cptEMIN/mkiat_Tloc.cpp',
+                               'pyamg/amg_core/cptEMIN/mvjcol.cpp',
+                               'pyamg/amg_core/cptEMIN/Orth_Q.cpp',
+                               'pyamg/amg_core/cptEMIN/print_Q.cpp',
+                               'pyamg/amg_core/cptEMIN/Prol_add_Cnodes.cpp',
+                               'pyamg/amg_core/cptEMIN/Transp_Patt.cpp',
+                               'pyamg/amg_core/cptEMIN/UinvDP_spmat.cpp',
+                               'pyamg/amg_core/cptEMIN/wrCSRmat.cpp'],
+                      include_dirs=['pyamg/amg_core/cptEMIN'],
+                      libraries=['lapacke'],
+                      extra_compile_args=['-fopenmp'],
+                      extra_link_args=['-fopenmp'],
+                     )
+    ]
+
+ext_modules += [
     Pybind11Extension('pyamg.amg_core.tests.bind_examples',
                       sources=['pyamg/amg_core/tests/bind_examples_bind.cpp'],
                      )
