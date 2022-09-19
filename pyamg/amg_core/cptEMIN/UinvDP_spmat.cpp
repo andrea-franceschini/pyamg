@@ -55,7 +55,7 @@ void UinvDP_spmat(const iReg nthreads, const iReg nrows_A, const iExt* iat_A,
             iExt JSTOP = iat_B[jjA+1];
 
             // Get diagonal coefficient
-            rExt diag;
+            rExt diag = 1.0;
             for (iExt k = JSTOP-1; k >= JSTRT; k--){
                if( ja_B[k] == jjA )
                {

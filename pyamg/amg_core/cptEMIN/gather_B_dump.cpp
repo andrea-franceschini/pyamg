@@ -1,7 +1,6 @@
 #include <stdlib.h>
 #include <omp.h>
 #include <limits>
-using namespace std;
 
 #include "DebEnv.h"
 #include "EMIN_parm.h"
@@ -92,9 +91,6 @@ int gather_B_dump(const int np, const int nn, const int nn_C, const int ntv,
          }
 
       } // End loop over columns
-
-      // Exit point
-      exit_pragma: ;
 
    } // End of parallel region
 

@@ -1,9 +1,5 @@
 #include <stdlib.h>
 #include <omp.h>
-//////////////////////////////////////////
-#include <iostream>
-using namespace std;
-//////////////////////////////////////////
 
 #include "count_rowterms.h"
 #include "mkiat_Tloc.h"

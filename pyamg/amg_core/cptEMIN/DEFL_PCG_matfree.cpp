@@ -3,7 +3,6 @@
 #include <algorithm>
 #include <iostream>
 #include <iomanip>
-using namespace std;
 
 #include "EMIN_parm.h"
 #include "apply_perm.h"
@@ -38,7 +37,7 @@ int DEFL_PCG_matfree(const int np, const int prec_type, const int nn,
 
    // Variables for energy computation
    double init_energy = 0.0;
-   double DE = 0, DEk, DE0;
+   double DE = 0.0, DEk, DE0 = 0.0;
 
    // Allocate scratches
    double *rhs = (double*) malloc( nn_K*sizeof(double) );
@@ -75,9 +74,9 @@ int DEFL_PCG_matfree(const int np, const int prec_type, const int nn,
    // Compute initial energy
    init_energy = Tr_A + ddot_par(np,nn_K,vec_P0,vscr,ridv) -
                         2.0*ddot_par(np,nn_K,vec_P0,wscr,ridv);
-   cout << setprecision(6) << scientific;
-   cout << "Initial Energy:  " << init_energy << endl;
-   cout << "Trace of A:      " << Tr_A << endl;
+   std::cout << std::setprecision(6) << std::scientific;
+   std::cout << "Initial Energy:  " << init_energy << std::endl;
+   std::cout << "Trace of A:      " << Tr_A << std::endl;
    #endif
    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
    // 3 - Subtract vec_f to vscr: vscr <-- vscr - vec_f
@@ -93,14 +92,14 @@ int DEFL_PCG_matfree(const int np, const int prec_type, const int nn,
    // Init residual
    #pragma omp parallel for num_threads(np)
    for (int i = 0; i < nn_K; i++) res[i] = rhs[i];
-   double bnorm = dnrm2_par(np,nn_K,rhs,ridv);
+   //double bnorm = dnrm2_par(np,nn_K,rhs,ridv);
 
    // Init PCG
    iter = 0;
    bool exit_test = (itmax <= 0);
 
    // PCG loop
-   double alpha, beta, gamma, gamma_old;
+   double alpha, gamma, gamma_old = 0.0;
    while (!exit_test){
 
       // Increase iter count
@@ -135,7 +134,7 @@ int DEFL_PCG_matfree(const int np, const int prec_type, const int nn,
          #pragma omp parallel for num_threads(np)
          for (int i = 0; i < nn_K; i++) pvec[i] = zvec[i];
       } else {
-         beta = gamma / gamma_old;
+         double const beta = gamma / gamma_old;
          #pragma omp parallel for num_threads(np)
          for (int i = 0; i < nn_K; i++) pvec[i] = zvec[i] + beta*pvec[i];
       }

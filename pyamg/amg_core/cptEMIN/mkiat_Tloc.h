@@ -13,8 +13,6 @@
 
 #pragma once
 
-using namespace std;
-
 /**
  * @brief Each thread computes the pointers to the beginning of each row of its part of the matrix
  * @param [in] nrows number of rows of the current thread.

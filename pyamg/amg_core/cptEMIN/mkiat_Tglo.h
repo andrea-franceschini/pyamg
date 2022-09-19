@@ -13,8 +13,6 @@
 
 #pragma once
 
-using namespace std;
-
 /**
  * @brief Computes the global iat_T and update WI pointers.
  * @param [in] current thread ID.

@@ -2,7 +2,6 @@
 #include <omp.h>
 #include <cmath>
 #include <chrono>
-using namespace std;
 
 #if defined PRINT
 #define dump true
@@ -77,11 +76,11 @@ int EMIN_ImpProl(const int np, const int itmax, const double en_tol, const doubl
    int ierr = 0;
 
    // --- Local variables for timing -----------------------------------------------------
-   chrono::time_point<std::chrono::system_clock> start, end, glob_start, glob_end;
-   chrono::duration<double> elaps_sec;
+   std::chrono::time_point<std::chrono::system_clock> start, end, glob_start, glob_end;
+   std::chrono::duration<double> elaps_sec;
 
    //---GLOBAL START-----------------------------
-   glob_start = chrono::system_clock::now();
+   glob_start = std::chrono::system_clock::now();
    //--------------------------------------------
    
    ierr = EMIN_matfree(np,itmax,en_tol,condmax,prec_type,nn,nn_C,ntv,nt_A,nt_P,
@@ -89,7 +88,7 @@ int EMIN_ImpProl(const int np, const int itmax, const double en_tol, const doubl
                        iat_patt,ja_patt,TV,iat_Pout,ja_Pout,coef_Pout,info);
 
    //---GLOBAL END---------------------------------------------------------------
-   glob_end = chrono::system_clock::now();
+   glob_end = std::chrono::system_clock::now();
    elaps_sec = glob_end - glob_start;
    double time_glob =  elaps_sec.count();
    double time_overhead = time_glob - info[0] - info[1] - info[2];
