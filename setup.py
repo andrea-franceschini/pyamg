@@ -85,6 +85,31 @@ ext_modules += [
     ]
 
 ext_modules += [
+    Pybind11Extension('pyamg.amg_core.cptBAMGProl',
+                      sources=['pyamg/amg_core/cptBAMGProl_bind.cpp',
+                               'pyamg/amg_core/BAMG_prol/add_new_neighs.cpp',
+                               'pyamg/amg_core/BAMG_prol/Apply_HouHol_Rot.cpp',
+                               'pyamg/amg_core/BAMG_prol/backsolve.cpp',
+                               'pyamg/amg_core/BAMG_prol/BAMG.cpp',
+                               'pyamg/amg_core/BAMG_prol/check_neigh_cond.cpp',
+                               'pyamg/amg_core/BAMG_prol/DebEnv.cpp',
+                               'pyamg/amg_core/BAMG_prol/get_cond.cpp',
+                               'pyamg/amg_core/BAMG_prol/heapsort.cpp',
+                               'pyamg/amg_core/BAMG_prol/linsol_error.cpp',
+                               'pyamg/amg_core/BAMG_prol/maxVol.cpp',
+                               'pyamg/amg_core/BAMG_prol/maxVol_inner.cpp',
+                               'pyamg/amg_core/BAMG_prol/mk_HouHolVec.cpp',
+                               'pyamg/amg_core/BAMG_prol/move_row_front.cpp',
+                               'pyamg/amg_core/BAMG_prol/ProlStripe_BAMG.cpp',
+                               'pyamg/amg_core/BAMG_prol/Reduce_IntSet.cpp'],
+                      include_dirs=['pyamg/amg_core/BAMG_prol'],
+                      libraries=['lapacke'],
+                      extra_compile_args=['-fopenmp'],
+                      extra_link_args=['-fopenmp'],
+                     )
+    ]
+
+ext_modules += [
     Pybind11Extension('pyamg.amg_core.tests.bind_examples',
                       sources=['pyamg/amg_core/tests/bind_examples_bind.cpp'],
                      )

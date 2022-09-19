@@ -34,6 +34,8 @@ from .sfsai_nsy import sfsai_nsy
 
 from .cptEMIN import cptEMIN
 
+from .cptBAMGProl import cptBAMGProl
+
 __all__ = [
     'apply_absolute_distance_filter',
     'apply_distance_filter',
@@ -96,4 +98,8 @@ __all__ = [
     'truncate_rows_csr'
     #
     'sfsai_nsy'
+    #
+    'cptEMIN'
+    #
+    'cptBAMGProl'
 ]

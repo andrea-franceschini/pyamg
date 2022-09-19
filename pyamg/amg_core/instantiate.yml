@@ -103,6 +103,7 @@ instantiate:
   functions:
     - sfsai_nsy
     - cptEMIN
+    - cptBAMGProl
 
 remaps:
     - fit_candidates_real: fit_candidates
