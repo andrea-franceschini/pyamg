@@ -10,8 +10,8 @@ inline void find_zij(const iReg n, const iReg r, const rExt *const *const Z, iRe
    zij = 0.0;
    for (iReg j = 0; j < r; j++){
       for (iReg i = 0; i < n; i++){
-         if (abs(Z[i][j]) > zij){
-            zij = abs(Z[i][j]);
+         if (std::abs(Z[i][j]) > zij){
+            zij = std::abs(Z[i][j]);
             irow = i;
             jcol = j;
          }

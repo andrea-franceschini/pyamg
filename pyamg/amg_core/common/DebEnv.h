@@ -10,6 +10,7 @@
 
 //#define DEBUG true
 #define DEBUG false
+#define BAMG_DEBUG false
 
 #define VERB_LEV 2
 

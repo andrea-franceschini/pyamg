@@ -76,13 +76,13 @@ int EMIN_ImpProl(const int np, const int itmax, const double en_tol, const doubl
    int ierr = 0;
 
    // --- Local variables for timing -----------------------------------------------------
-   std::chrono::time_point<std::chrono::system_clock> start, end, glob_start, glob_end;
+   std::chrono::time_point<std::chrono::system_clock> glob_start, glob_end;
    std::chrono::duration<double> elaps_sec;
 
    //---GLOBAL START-----------------------------
    glob_start = std::chrono::system_clock::now();
    //--------------------------------------------
-   
+
    ierr = EMIN_matfree(np,itmax,en_tol,condmax,prec_type,nn,nn_C,ntv,nt_A,nt_P,
                        nt_patt,fcnode,iat_A,ja_A,coef_A,iat_Pin,ja_Pin,coef_Pin,
                        iat_patt,ja_patt,TV,iat_Pout,ja_Pout,coef_Pout,info);

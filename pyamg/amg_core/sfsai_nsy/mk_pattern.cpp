@@ -98,7 +98,6 @@ int mk_pattern(const int kpow, const double tau_pref, const int nnzr_max, const 
       ind += len_out;
    }
    iat_F[nn_A] = ind;
-   int nt_F = ind;
 
    // Delete intermediate scratches
    delete [] iat_FT;
@@ -106,6 +105,7 @@ int mk_pattern(const int kpow, const double tau_pref, const int nnzr_max, const 
    delete [] iat_FA;
    delete [] ja_FA;
 
+   //int nt_F = ind;
    //double nt_F_d = static_cast<double>(nt_F);
    //fprintf(stdout,"Final Filtered Symmetrized Pattern avg nnzr: %10.2f\n",nt_F_d / nn_A_d);
 

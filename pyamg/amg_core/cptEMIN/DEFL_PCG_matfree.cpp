@@ -143,7 +143,7 @@ int DEFL_PCG_matfree(const int np, const int prec_type, const int nn,
       gamma_old = gamma;
 
       // Premultiply the search direction by the operator
-      
+
       // 1 - No need for permutation
       // 2 - Multiply by K: vscr <-- K*pvec
       KP_spmat(np,nn,iat_A,ja_A,coef_A,nn_C,iat_patt,ja_patt,pvec,vscr,WNALL);

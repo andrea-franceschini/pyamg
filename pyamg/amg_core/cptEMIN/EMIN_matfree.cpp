@@ -122,7 +122,7 @@ int EMIN_matfree(const int np, const int itmax, const double en_tol, const doubl
    if (dump) std::cout << "---- COPY PROL ----" << std::endl << std::endl;
    double *coef_P0 = (double*) calloc( nt_patt , sizeof(double) );
    if (coef_P0 == nullptr) return ierr = 1;
-   copy_Prol(np,nn,fcnode,iat_Pin,ja_Pin,coef_Pin,iat_patt,ja_patt,coef_P0); 
+   copy_Prol(np,nn,fcnode,iat_Pin,ja_Pin,coef_Pin,iat_patt,ja_patt,coef_P0);
    if (DUMP_PREC){
       FILE *origPfile = fopen("origProl.csr","w");
       wrCSRmat(origPfile,false,nn,iat_Pin,ja_Pin,coef_Pin);
@@ -218,7 +218,7 @@ int EMIN_matfree(const int np, const int itmax, const double en_tol, const doubl
    // Update prolongation with DP
    #pragma omp parallel for num_threads(np)
    for (int i = 0; i < nt_patt; i++) coef_P0[i] -= DP[i];
-   
+
    // Free scratches
    free(DP);
    free(vec_f);

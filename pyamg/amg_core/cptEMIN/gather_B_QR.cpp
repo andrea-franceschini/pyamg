@@ -103,7 +103,7 @@ int gather_B_QR(const int np, const double condmax, const int nn, const int nn_C
       double query_work_3;
       double *SIGMA = nullptr;      // (DI DIMENSIONE l_nn == nr_BB_loc)
       double *dummy_U = nullptr;    // (FASULLO NON VIENE USATO)
-      double *VT = nullptr;         // (DI DIMENSIONE l_mm*l_mm = ntv*ntv)  
+      double *VT = nullptr;         // (DI DIMENSIONE l_mm*l_mm = ntv*ntv)
       double *tau = nullptr;
       double *work = nullptr;
 
@@ -239,9 +239,9 @@ int gather_B_QR(const int np, const double condmax, const int nn, const int nn_C
                   //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@2
                   if (max_DR / min_DR > condmax){
 
-                     //------------------------------------+ 
+                     //------------------------------------+
                      // BB is rank deficient use SVD below |
-                     //------------------------------------+ 
+                     //------------------------------------+
 
                      FAIL_QR = true;
                      // Reload TV in BB_scr

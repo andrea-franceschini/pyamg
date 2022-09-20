@@ -42,12 +42,12 @@ void DebugEnvironment::SetDebEnv(const int nthreads_in, const char *mode){
 //----------------------------------------------------------------------------------------
 
 // Check if the level has to be printed
-bool DebugEnvironment::ChkPrtLevel(iReg ilev){
+bool DebugEnvironment::ChkPrtLevel(int ilev){
 
    if (DEBUG){
 
-      iExt size = iLevPrint.size();
-      for ( iExt i = 0; i < size; i++ ) {
+      int size = iLevPrint.size();
+      for ( int i = 0; i < size; i++ ) {
          if ( iLevPrint[i] == ilev ) return true;
       }
 
@@ -74,7 +74,7 @@ void DebugEnvironment::OpenDebugLog(const char *mode){
       t_logfile.resize(nthreads);
 
       // Open the log unit associated to threads and ranks
-      for (iReg i = 0; i < nthreads; i++){
+      for (int i = 0; i < nthreads; i++){
          std::stringstream ss;
          ss << std::setw(2) << std::setfill('0') << i;
          std::string myid_label = ss.str();
@@ -94,7 +94,7 @@ void DebugEnvironment::CloseDebugLog(){
    if (DEBUG && OPEN_LOG){
       OPEN_LOG = false;
       fclose(r_logfile);
-      for (iReg i = 0; i < nthreads; i++) fclose(t_logfile[i]);
+      for (int i = 0; i < nthreads; i++) fclose(t_logfile[i]);
    }
 
 }
