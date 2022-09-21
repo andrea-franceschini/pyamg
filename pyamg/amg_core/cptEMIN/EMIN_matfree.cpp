@@ -123,7 +123,8 @@ int EMIN_matfree(const int np, const int itmax, const double en_tol, const doubl
    double *coef_P0 = (double*) calloc( nt_patt , sizeof(double) );
    if (coef_P0 == nullptr) return ierr = 1;
    copy_Prol(np,nn,fcnode,iat_Pin,ja_Pin,coef_Pin,iat_patt,ja_patt,coef_P0);
-   if (DUMP_PREC){
+   if (DUMP_PREC)
+   {
       FILE *origPfile = fopen("origProl.csr","w");
       wrCSRmat(origPfile,false,nn,iat_Pin,ja_Pin,coef_Pin);
       fclose(origPfile);
@@ -137,7 +138,8 @@ int EMIN_matfree(const int np, const int itmax, const double en_tol, const doubl
    start = std::chrono::system_clock::now();
    double *mat_Q = nullptr;
    double *vec_f = nullptr;
-   if (DUMP_PREC){
+   if (DUMP_PREC)
+   {
       double *mat_B = nullptr;
       ierr = gather_B_dump(np,nn,nn_C,ntv,fcnode,iat_patt,ja_patt,TV,mat_B);
       FILE *Bfile = fopen("mat_B","w");
@@ -175,11 +177,12 @@ int EMIN_matfree(const int np, const int itmax, const double en_tol, const doubl
    end = std::chrono::system_clock::now();
    elaps_sec = end - start;
    double time_gath_B = elaps_sec.count();
-   if (DUMP_PREC){
+   if (DUMP_PREC)
+   {
       FILE *corrPfile = fopen("corrProl.csr","w");
       wrCSRmat(corrPfile,false,nn,iat_patt,ja_patt,coef_P0);
       fclose(corrPfile);
-      FILE *Qfile = fopen("mat_Q2","w");
+      FILE *Qfile = fopen("mat_Q","w");
       print_Q(Qfile,nn,ntv,iat_patt,mat_Q);
       fflush(Qfile);
       fclose(Qfile);

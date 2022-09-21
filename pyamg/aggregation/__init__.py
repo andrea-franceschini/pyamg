@@ -10,6 +10,9 @@ from .smooth import (jacobi_prolongation_smoother, richardson_prolongation_smoot
 from .rootnode import rootnode_solver
 from .energymin_cf_solver import energymin_cf_solver
 
+from .mkPattern import mkPatt
+from .EMIN import EMIN
+
 __all__ = ['adaptive_sa_solver',
            'standard_aggregation', 'naive_aggregation',
            'lloyd_aggregation', 'balanced_lloyd_aggregation',

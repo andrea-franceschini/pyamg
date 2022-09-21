@@ -426,12 +426,74 @@ def _extend_hierarchy(levels, strength, aggregate, smooth, improve_candidates,
             BH = relaxation_as_linear_operator((fn, kwargs), AH, b) * BH
             levels[-1].BH = BH
     
+    # @@@@@@@@@@@@ TEMPORARY HARDCODED PARAMETERS - START
+    BAMG = True
+    EMIN_AC = True
+    nthreads = 1
+    verbosity = 0
+    itmax_vol = 100
+    dist_min = 2
+    dist_max = 6
+    mmax = 6
+    maxcond = 1.e13
+    maxrownrm = 5.0
+    tol_vol = 0.01
+    eps = 1e-10
+    avg_nnzr = 30
+    kpow = 1
+    itmax_EMIN = 5
+    tol_EMIN = 0.01
+    condmax_EMIN = 1.e10
+    precType = 'jacobi'
+    from pyamg.amg_core import cptBAMGProl
+    from .mkPattern import mkPatt
+    from .EMIN import EMIN
+    from scipy.io import mmwrite
+    from scipy.sparse import find
+    from numpy import savetxt
+    # @@@@@@@@@@@@ TEMPORARY HARDCODED PARAMETERS - END
+
     # Compute tentative T
     if classical_CF:
-        # For classical C/F splittings, energy_prolongation_smoother below will enforce T Bc = B
-        T = Cpt_params[1]['P_I'].copy()
-        if A.symmetry == 'nonsymmetric':
-            TH = Cpt_params[1]['P_I'].copy()
+        if not BAMG:
+            # For classical C/F splittings, energy_prolongation_smoother below will enforce T Bc = B
+            T = Cpt_params[1]['P_I'].copy()
+            if A.symmetry == 'nonsymmetric':
+                TH = Cpt_params[1]['P_I'].copy()
+        else:
+            if A.symmetry == 'nonsymmetric':
+                raise ValueError(f'BAMG does not support nonsymmetric matrices')
+
+            # Removing diagonal from strength of connection matrix
+            S = C - speye(C.shape[0], C.shape[1], format='csr')
+            # Total number of unknowns
+            nn_S = S.shape[0]
+            iat_S = S.indptr
+            ja_S = S.indices
+            # Initialize arrays
+            nn_I = nn_S
+            nc_I = ncoarse
+            nt_I = nn_I*mmax
+            iat_I = np.empty((nn_I+1,), dtype=np.int32)
+            ja_I = np.empty((nt_I,), dtype=np.int32)
+            coef_I = np.empty((nt_I,), dtype=float)
+            c_mark = np.empty((nn_I,), dtype=np.int32)
+
+            # Create F/C nodes indicator
+            fcnodes = np.ones((nn_S,), dtype=np.int32)
+            fcnodes[Fpts] = -1
+
+            # Compute prolongation
+            ierr = cptBAMGProl( len(levels), verbosity, itmax_vol, dist_min, dist_max,
+                                mmax, maxcond, maxrownrm, tol_vol, eps, nthreads, nn_S,
+                                iat_S, ja_S, B.shape[1], fcnodes, B.flatten(), nn_I,
+                                nt_I, iat_I, ja_I, coef_I, c_mark )
+            if (ierr != 0):
+                raise ValueError('Error in cptBAMGProl')
+
+            T = csr_matrix((coef_I, ja_I, iat_I), shape=(nn_I, nc_I))
+            mmwrite('P.mtx',T)
+
     else:
         # Compute the tentative prolongator, T, which is a tentative interpolation
         # matrix from the coarse-grid to the fine-grid.  T exactly interpolates
@@ -458,10 +520,32 @@ def _extend_hierarchy(levels, strength, aggregate, smooth, improve_candidates,
     # improved for algebraically smooth error.
     fn, kwargs = unpack_arg(smooth[len(levels)-1])
     if fn == 'energy':
-        P = energy_prolongation_smoother(A, T, C, B, levels[-1].B,
-                                         Cpt_params=Cpt_params, 
-                                         force_fit_candidates=classical_CF, 
-                                         **kwargs)
+        if not EMIN_AC:
+            P = energy_prolongation_smoother(A, T, C, B, levels[-1].B,
+                                             Cpt_params=Cpt_params, 
+                                             force_fit_candidates=classical_CF, 
+                                             **kwargs)
+        else:
+            fcnodes = -np.ones((nn_S,), dtype=np.int32)
+            fcnodes[Cpts] = range( 0, len(Cpts) )
+            pattern = mkPatt(C,T,avg_nnzr,kpow)
+
+            # Remove coaese rows from pattern
+            [ii,jj,pp] = find(pattern)
+            pos = np.where(fcnodes[ii]<0)[0]
+            pattern = csr_matrix((pp[pos], (ii[pos],jj[pos])),shape=pattern.shape)
+
+            mmwrite('PATT_' + str(len(levels)) + '.mtx',pattern)
+            mmwrite('A_' + str(len(levels)) + '.mtx',A)
+            mmwrite('T_' + str(len(levels)) + '.mtx',T)
+            savetxt('TV_' + str(len(levels)) + '.txt',levels[-1].B)
+            savetxt('fc_' + str(len(levels)) + '.txt',fcnodes, fmt='%3d')
+            print(A.has_sorted_indices)
+            print(T.has_sorted_indices)
+            P = EMIN(itmax_EMIN,tol_EMIN,condmax_EMIN,precType,fcnodes,A,T,levels[-1].B,pattern)
+            mmwrite('Pemin_' + str(len(levels)) + '.mtx',P)
+            #mmwrite('P.mtx',P)
+
     elif fn is None:
         P = T
     else:
@@ -502,6 +586,9 @@ def _extend_hierarchy(levels, strength, aggregate, smooth, improve_candidates,
 
     levels.append(MultilevelSolver.Level())
     A = R * A * P                                # Galerkin operator
+    # TMP CHANGE FOR EMIN/BAMG - start @@@@@@@@@@@@@@@@
+    A.sort_indices()
+    # TMP CHANGE FOR EMIN/BAMG - end @@@@@@@@@@@@@@@@
     A.symmetry = symmetry
     levels[-1].A = A
     levels[-1].B = B                             # right near nullspace candidates
