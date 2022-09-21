@@ -35,7 +35,8 @@ def energymin_cf_solver(A, B=None, BH=None,
                                             {'sweep': 'symmetric',
                                              'iterations': 4}),
                         max_levels=10, max_coarse=10,
-                        diagonal_dominance=False, keep=False, **kwargs):
+                        diagonal_dominance=False, keep=False, opts=None,
+                        **kwargs):
     """Create a multilevel solver using energy-min AMG
 
     See the notes below, for the major differences with the classical-style
@@ -296,7 +297,7 @@ def energymin_cf_solver(A, B=None, BH=None,
     while len(levels) < max_levels and \
             int(levels[-1].A.shape[0]/get_blocksize(levels[-1].A)) > max_coarse:
         _extend_hierarchy(levels, strength, aggregate, smooth,
-                          improve_candidates, diagonal_dominance, keep)
+                          improve_candidates, diagonal_dominance, keep, opts)
 
     ml = MultilevelSolver(levels, **kwargs)
     change_smoothers(ml, presmoother, postsmoother)
@@ -304,7 +305,7 @@ def energymin_cf_solver(A, B=None, BH=None,
 
 
 def _extend_hierarchy(levels, strength, aggregate, smooth, improve_candidates,
-                      diagonal_dominance=False, keep=True):
+                      diagonal_dominance=False, keep=True, opts=None):
     """Extend the multigrid hierarchy.
 
     Service routine to implement the strength of connection, aggregation,
@@ -427,9 +428,11 @@ def _extend_hierarchy(levels, strength, aggregate, smooth, improve_candidates,
             levels[-1].BH = BH
     
     # @@@@@@@@@@@@ TEMPORARY HARDCODED PARAMETERS - START
-    BAMG = True
-    EMIN_AC = True
-    nthreads = 1
+    BAMG = False
+    EMIN_AC = False
+    if (opts is not None):
+        BAMG = 'BAMG' in opts
+        EMIN_AC = 'EMIN_AC' in opts
     verbosity = 0
     itmax_vol = 100
     dist_min = 2
@@ -485,14 +488,13 @@ def _extend_hierarchy(levels, strength, aggregate, smooth, improve_candidates,
 
             # Compute prolongation
             ierr = cptBAMGProl( len(levels), verbosity, itmax_vol, dist_min, dist_max,
-                                mmax, maxcond, maxrownrm, tol_vol, eps, nthreads, nn_S,
-                                iat_S, ja_S, B.shape[1], fcnodes, B.flatten(), nn_I,
-                                nt_I, iat_I, ja_I, coef_I, c_mark )
+                                mmax, maxcond, maxrownrm, tol_vol, eps, nn_S, iat_S,
+                                ja_S, B.shape[1], fcnodes, B.flatten(), nn_I, nt_I,
+                                iat_I, ja_I, coef_I, c_mark )
             if (ierr != 0):
                 raise ValueError('Error in cptBAMGProl')
 
             T = csr_matrix((coef_I, ja_I, iat_I), shape=(nn_I, nc_I))
-            mmwrite('P.mtx',T)
 
     else:
         # Compute the tentative prolongator, T, which is a tentative interpolation
@@ -526,7 +528,7 @@ def _extend_hierarchy(levels, strength, aggregate, smooth, improve_candidates,
                                              force_fit_candidates=classical_CF, 
                                              **kwargs)
         else:
-            fcnodes = -np.ones((nn_S,), dtype=np.int32)
+            fcnodes = -np.ones((C.shape[0],), dtype=np.int32)
             fcnodes[Cpts] = range( 0, len(Cpts) )
             pattern = mkPatt(C,T,avg_nnzr,kpow)
 
@@ -535,16 +537,13 @@ def _extend_hierarchy(levels, strength, aggregate, smooth, improve_candidates,
             pos = np.where(fcnodes[ii]<0)[0]
             pattern = csr_matrix((pp[pos], (ii[pos],jj[pos])),shape=pattern.shape)
 
-            mmwrite('PATT_' + str(len(levels)) + '.mtx',pattern)
-            mmwrite('A_' + str(len(levels)) + '.mtx',A)
-            mmwrite('T_' + str(len(levels)) + '.mtx',T)
-            savetxt('TV_' + str(len(levels)) + '.txt',levels[-1].B)
-            savetxt('fc_' + str(len(levels)) + '.txt',fcnodes, fmt='%3d')
-            print(A.has_sorted_indices)
-            print(T.has_sorted_indices)
+            #mmwrite('PATT_' + str(len(levels)) + '.mtx',pattern)
+            #mmwrite('A_' + str(len(levels)) + '.mtx',A)
+            #mmwrite('T_' + str(len(levels)) + '.mtx',T)
+            #savetxt('TV_' + str(len(levels)) + '.txt',levels[-1].B)
+            #savetxt('fc_' + str(len(levels)) + '.txt',fcnodes, fmt='%3d')
             P = EMIN(itmax_EMIN,tol_EMIN,condmax_EMIN,precType,fcnodes,A,T,levels[-1].B,pattern)
-            mmwrite('Pemin_' + str(len(levels)) + '.mtx',P)
-            #mmwrite('P.mtx',P)
+            #mmwrite('Pemin_' + str(len(levels)) + '.mtx',P)
 
     elif fn is None:
         P = T

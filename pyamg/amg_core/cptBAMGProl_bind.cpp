@@ -20,7 +20,6 @@ int _cptBAMGProl(
         R const maxrownrm,
           R const tol_vol,
               R const eps,
-         I const nthreads,
              I const nn_S,
    py::array_t<I> & iat_S,
     py::array_t<I> & ja_S,
@@ -63,7 +62,6 @@ int _cptBAMGProl(
                 maxrownrm,
                   tol_vol,
                       eps,
-                 nthreads,
                      nn_S,
                    _iat_S, iat_S.shape(0),
                     _ja_S, ja_S.shape(0),
@@ -92,7 +90,7 @@ PYBIND11_MODULE(cptBAMGProl, m) {
     options.disable_function_signatures();
 
     m.def("cptBAMGProl", &_cptBAMGProl<int, double>,
-        py::arg("level"), py::arg("verbosity"), py::arg("itmax_vol"), py::arg("dist_min"), py::arg("dist_max"), py::arg("mmax"), py::arg("maxcond"), py::arg("maxrownrm"), py::arg("tol_vol"), py::arg("eps"), py::arg("nthreads"), py::arg("nn_S"), py::arg("iat_S").noconvert(), py::arg("ja_S").noconvert(), py::arg("ntv"), py::arg("fcnodes").noconvert(), py::arg("TV").noconvert(), py::arg("nn_I"), py::arg("nt_I"), py::arg("iat_I").noconvert(), py::arg("ja_I").noconvert(), py::arg("coef_I").noconvert(), py::arg("c_mark").noconvert(),
+        py::arg("level"), py::arg("verbosity"), py::arg("itmax_vol"), py::arg("dist_min"), py::arg("dist_max"), py::arg("mmax"), py::arg("maxcond"), py::arg("maxrownrm"), py::arg("tol_vol"), py::arg("eps"), py::arg("nn_S"), py::arg("iat_S").noconvert(), py::arg("ja_S").noconvert(), py::arg("ntv"), py::arg("fcnodes").noconvert(), py::arg("TV").noconvert(), py::arg("nn_I"), py::arg("nt_I"), py::arg("iat_I").noconvert(), py::arg("ja_I").noconvert(), py::arg("coef_I").noconvert(), py::arg("c_mark").noconvert(),
 R"pbdoc(
 MAIN PROGRAM)pbdoc");
 

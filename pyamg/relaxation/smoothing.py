@@ -699,7 +699,7 @@ def solveSystem( A, FL, FU, tol = 1.e-8, restart = 100, maxiter = 1000, plot = T
        callback=None, residuals=residuals1 )
     residuals1 = residuals1 / residuals1[0]
     niter1 = len(residuals1)
-    print(niter1)
+    return niter1
 
 
 def setup_sfsai_nsy(lvl, iterations=DEFAULT_NITER, sweep=DEFAULT_SWEEP,
@@ -715,9 +715,9 @@ def setup_sfsai_nsy(lvl, iterations=DEFAULT_NITER, sweep=DEFAULT_SWEEP,
     FLAFU = LinearOperator(lvl.Acsr.shape, applyFLAFU, dtype=lvl.Acsr.dtype)
     vals = sparse.linalg.eigs(FLAFU, k=1, which='LR', maxiter=100, tol=1.e-3, return_eigenvectors=False)
     vals = np.real_if_close(vals)
-    print("Max eig: ", vals[0])
+    #print( "Max eig: ", vals[0] )
 
-    #solveSystem( lvl.Acsr, FL, FU )
+    #print( solveSystem( lvl.Acsr, FL, FU ) )
 
     # Attention: has to work as both pre and post smoother
     # For pre smoothing, x has to be initialized to zeros

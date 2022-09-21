@@ -157,9 +157,6 @@ int DEFL_PCG_matfree(const int np, const int prec_type, const int nn,
       // Compute energy reduction
       DEk = gamma*gamma / alpha;
       alpha = gamma / alpha;
-      //@@@@@@@@@@@@@@@2
-      printf("%4d %15.6e %15.6e %15.6e\n",iter,ddot_par(np,nn_K,QKpvec,pvec,ridv), gamma, DEk);
-      //@@@@@@@@@@@@@@@2
 
       // Update Prolongation and residual
       #pragma omp parallel for num_threads(np)

@@ -138,7 +138,7 @@ int EMIN_matfree(const int np, const int itmax, const double en_tol, const doubl
    start = std::chrono::system_clock::now();
    double *mat_Q = nullptr;
    double *vec_f = nullptr;
-   if (DUMP_PREC)
+   //if (DUMP_PREC)
    {
       double *mat_B = nullptr;
       ierr = gather_B_dump(np,nn,nn_C,ntv,fcnode,iat_patt,ja_patt,TV,mat_B);
@@ -177,7 +177,7 @@ int EMIN_matfree(const int np, const int itmax, const double en_tol, const doubl
    end = std::chrono::system_clock::now();
    elaps_sec = end - start;
    double time_gath_B = elaps_sec.count();
-   if (DUMP_PREC)
+   //if (DUMP_PREC)
    {
       FILE *corrPfile = fopen("corrProl.csr","w");
       wrCSRmat(corrPfile,false,nn,iat_patt,ja_patt,coef_P0);

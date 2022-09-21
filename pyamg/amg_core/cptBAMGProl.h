@@ -35,7 +35,6 @@ int cptBAMGProl( I const level,
                  R const maxrownrm,
                  R const tol_vol,
                  R const eps,
-                 I const nthreads,
                  I const nn_S,
                  I const iat_S[], int const iat_S_size,
                  I const ja_S[], int const ja_S_size,
@@ -49,6 +48,13 @@ int cptBAMGProl( I const level,
                  R coef_I[], int const coef_I_size,
                  I c_mark[], int const c_mark_size )
 {
+   // Retrieve number of openMP threads
+   int nthreads=1;
+   const char* env_p = std::getenv("OMP_NUM_THREADS");
+   if(env_p){
+      nthreads = atoi(env_p);
+   }
+
    // Init debug
    if (level == 1){
       DebEnv.SetDebEnv(nthreads,"w");

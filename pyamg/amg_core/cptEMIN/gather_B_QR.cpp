@@ -386,7 +386,7 @@ int gather_B_QR(const int np, const double condmax, const int nn, const int nn_C
                   }
                   //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
-                  if (false) { //@@@@ DA VALUTARE SE METTERLO TRA I PARAMETRI
+                  if (true) { //@@@@ DA VALUTARE SE METTERLO TRA I PARAMETRI
                      // Pad BB_scr with zeroes
                      int npad = (ntv-rank_BB)*nr_BB_loc;
                      for (int k = 0; k < npad; k++) BB_scr[ind_BB+nr_BB_loc*rank_BB+k] = 0.0;

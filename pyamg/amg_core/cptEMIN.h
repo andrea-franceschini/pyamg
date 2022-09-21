@@ -36,8 +36,6 @@ int cptEMIN( I itmax,
    if(env_p){
       nthreads = atoi(env_p);
    }
-   printf("nthreads %d\n",nthreads);
-   printf("precType %d\n",precType);
 
    // Allocate and set TV
    const double **TV = (const double**) malloc(nn*sizeof(double*));
