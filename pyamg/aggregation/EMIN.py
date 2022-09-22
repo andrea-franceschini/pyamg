@@ -51,6 +51,10 @@ def EMIN(itmax,tol,condmax,precType,fcnodes,Ain,P0,TV,pattern):
     info = np.empty((8,), dtype=np.float64)
 
     # Call the c function
+    #from scipy.io import mmwrite
+    #from numpy import savetxt
+    #savetxt('TV.txt',TV)
+    #mmwrite('A.mtx',A)
     ierr = cptEMIN(itmax,tol,condmax,precType,nn,nc,ntv,fcnodes,iat_A,ja_A,coef_A,
                    iat_P0,ja_P0,coef_P0,TV_1d,iat_patt,ja_patt,iat_Pout,ja_Pout,
                    coef_Pout,info)

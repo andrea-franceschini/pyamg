@@ -17,7 +17,7 @@ supporting C++ code for performance critical operations.
 """
 
 from setuptools import setup
-from pybind11.setup_helpers import Pybind11Extension, build_ext
+from pybind11.setup_helpers import Pybind11Extension, build_ext, ParallelCompile
 
 amg_core_headers = ['evolution_strength',
                     'graph',
@@ -117,6 +117,10 @@ ext_modules += [
                       sources=['pyamg/amg_core/tests/bind_examples_bind.cpp'],
                      )
     ]
+
+
+# Optional multithreaded build
+ParallelCompile("NPY_NUM_BUILD_JOBS").install()
 
 setup(
     ext_modules=ext_modules,

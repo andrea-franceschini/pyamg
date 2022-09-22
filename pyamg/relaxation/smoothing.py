@@ -703,7 +703,7 @@ def solveSystem( A, FL, FU, tol = 1.e-8, restart = 100, maxiter = 1000, plot = T
 
 
 def setup_sfsai_nsy(lvl, iterations=DEFAULT_NITER, sweep=DEFAULT_SWEEP,
-                    omega=1.0, kpow=100, nnzr_max=100, tau_pref=0.01, tau_post=0.0):
+                    omega=1.0, kpow=100, nnzr_max=30, tau_pref=0.01, tau_post=0.0):
     """Set up static nonsymmetric FSAI smoothing."""
 
     matrix_asformat(lvl, 'A', 'csr')
