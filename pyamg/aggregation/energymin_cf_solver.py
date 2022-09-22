@@ -140,14 +140,14 @@ def energymin_cf_solver(A, B=None, BH=None,
     MultilevelSolver, aggregation.smoothed_aggregation_solver,
     classical.ruge_stuben_solver
 
-    Notes 
+    Notes
     -----
          - Here, AMG is "classial" in that it preserves an identity block
            in the interpolation operator, P.  This identity block can represent
            root-nodes of aggregates, or be some other arbitrary CF splitting.
 
          - Only smooth={'energy', None} is supported for prolongation
-           smoothing.  
+           smoothing.
 
          - The additional parameters are passed through as arguments to
            MultilevelSolver.  Refer to pyamg.MultilevelSolver for additional
@@ -355,7 +355,7 @@ def _extend_hierarchy(levels, strength, aggregate, smooth, improve_candidates,
     flag, kwargs = unpack_arg(diagonal_dominance)
     if flag:
         C = eliminate_diag_dom_nodes(A, C, **kwargs)
-    
+
     # Compute the aggregation matrix AggOp (i.e., the nodal coarsening of A).
     # AggOp is a boolean matrix, where the sparsity pattern for the k-th column
     # denotes the fine-grid nodes agglomerated into k-th coarse-grid node.
@@ -381,7 +381,7 @@ def _extend_hierarchy(levels, strength, aggregate, smooth, improve_candidates,
         splitting = split.CLJPc(C, **kwargs)
     elif fn == 'CR':
         # TODO: adaptive C/F splitting based on  abs(T Bc - Bf).  This could be
-        # incorporated as a new CR type splitting method, or be implemented around 
+        # incorporated as a new CR type splitting method, or be implemented around
         # line 1120 in energy_prolongation_smoothing, where filter_operator is used.
         # It may belong better here, at least philosophically.
         splitting = CR(C, **kwargs)
@@ -391,10 +391,10 @@ def _extend_hierarchy(levels, strength, aggregate, smooth, improve_candidates,
     # If using classical splitting, construct needed Rootnode data structures: Cpt_params
     classical_CF = False
     if fn in ['RS', 'PMIS', 'PMISc', 'CLJP', 'CLJPc', 'CR']:
-        # TODO: Not sure how to (and if we want) BSR-supernode support for C/F splittings 
+        # TODO: Not sure how to (and if we want) BSR-supernode support for C/F splittings
         if isspmatrix_bsr(A):
             if A.blocksize[0] > 1:
-                raise ValueError(f'Currently, BSR A and classical CF splittings are not supported') 
+                raise ValueError(f'Currently, BSR A and classical CF splittings are not supported')
 
         classical_CF = True
         Cpts = (splitting == 1).nonzero()[0]
@@ -408,7 +408,7 @@ def _extend_hierarchy(levels, strength, aggregate, smooth, improve_candidates,
         # construct P_I as in get_Cpt_params
         indices = Cpts.copy()
         indptr = np.arange(indices.shape[0]+1)
-        ncoarse = Cpts.shape[0] 
+        ncoarse = Cpts.shape[0]
         P_I = csc_matrix((I_C.data.copy(), indices, indptr),
                           shape=(I_C.shape[0], ncoarse))
         # not sure how to handle the BSR case, so just assume it doesn't exist
@@ -416,7 +416,7 @@ def _extend_hierarchy(levels, strength, aggregate, smooth, improve_candidates,
         I_C = I_C.tobsr(blocksize=(1, 1))
         I_F = I_F.tobsr(blocksize=(1, 1))
         Cpt_params =  (True, {'P_I': P_I, 'I_F': I_F, 'I_C': I_C, 'Cpts': Cpts, 'Fpts': Fpts})
-    
+
     # Improve near nullspace candidates by relaxing on A B = 0
     fn, kwargs = unpack_arg(improve_candidates[len(levels)-1])
     if fn is not None:
@@ -426,7 +426,7 @@ def _extend_hierarchy(levels, strength, aggregate, smooth, improve_candidates,
         if A.symmetry == 'nonsymmetric':
             BH = relaxation_as_linear_operator((fn, kwargs), AH, b) * BH
             levels[-1].BH = BH
-    
+
     # @@@@@@@@@@@@ TEMPORARY HARDCODED PARAMETERS - START
     BAMG = False
     EMIN_AC = False
@@ -452,9 +452,16 @@ def _extend_hierarchy(levels, strength, aggregate, smooth, improve_candidates,
     from .mkPattern import mkPatt
     from .EMIN import EMIN
     from scipy.io import mmwrite
-    from scipy.sparse import find
+    from scipy.sparse import find, bsr_matrix
     from numpy import savetxt
     # @@@@@@@@@@@@ TEMPORARY HARDCODED PARAMETERS - END
+
+    #if EMIN_AC:
+    #    A1 = A.copy()
+    #    if not isspmatrix_csr(A1):
+    #        A1 = A1.tocsr()
+    #    if not A.has_sorted_indices:
+    #        A1.sort_indices()
 
     # Compute tentative T
     if classical_CF:
@@ -495,6 +502,7 @@ def _extend_hierarchy(levels, strength, aggregate, smooth, improve_candidates,
                 raise ValueError('Error in cptBAMGProl')
 
             T = csr_matrix((coef_I, ja_I, iat_I), shape=(nn_I, nc_I))
+            T = T.tobsr()
 
     else:
         # Compute the tentative prolongator, T, which is a tentative interpolation
@@ -505,13 +513,13 @@ def _extend_hierarchy(levels, strength, aggregate, smooth, improve_candidates,
         if A.symmetry == 'nonsymmetric':
             TH, dummyH = fit_candidates(AggOp, BH[:, 0:get_blocksize(A)])
             del dummyH
-        
+
         # Create necessary root node matrices
         Cpt_params = (True, get_Cpt_params(A, Cnodes, AggOp, T))
         T = scale_T(T, Cpt_params[1]['P_I'], Cpt_params[1]['I_F'])
         if A.symmetry == 'nonsymmetric':
             TH = scale_T(TH, Cpt_params[1]['P_I'], Cpt_params[1]['I_F'])
-     
+
     # Set coarse grid near nullspace modes as injected fine grid near
     # null-space modes
     B = Cpt_params[1]['P_I'].T*levels[-1].B
@@ -524,8 +532,8 @@ def _extend_hierarchy(levels, strength, aggregate, smooth, improve_candidates,
     if fn == 'energy':
         if not EMIN_AC:
             P = energy_prolongation_smoother(A, T, C, B, levels[-1].B,
-                                             Cpt_params=Cpt_params, 
-                                             force_fit_candidates=classical_CF, 
+                                             Cpt_params=Cpt_params,
+                                             force_fit_candidates=classical_CF,
                                              **kwargs)
         else:
             fcnodes = -np.ones((C.shape[0],), dtype=np.int32)
@@ -543,6 +551,7 @@ def _extend_hierarchy(levels, strength, aggregate, smooth, improve_candidates,
             #savetxt('TV_' + str(len(levels)) + '.txt',levels[-1].B)
             #savetxt('fc_' + str(len(levels)) + '.txt',fcnodes, fmt='%3d')
             P = EMIN(itmax_EMIN,tol_EMIN,condmax_EMIN,precType,fcnodes,A,T,levels[-1].B,pattern)
+            P = P.tobsr()
             #mmwrite('Pemin_' + str(len(levels)) + '.mtx',P)
 
     elif fn is None:
@@ -585,9 +594,6 @@ def _extend_hierarchy(levels, strength, aggregate, smooth, improve_candidates,
 
     levels.append(MultilevelSolver.Level())
     A = R * A * P                                # Galerkin operator
-    # TMP CHANGE FOR EMIN/BAMG - start @@@@@@@@@@@@@@@@
-    A.sort_indices()
-    # TMP CHANGE FOR EMIN/BAMG - end @@@@@@@@@@@@@@@@
     A.symmetry = symmetry
     levels[-1].A = A
     levels[-1].B = B                             # right near nullspace candidates

@@ -44,6 +44,5 @@ int sfsai_nsy( I kpow,
    // --- Compress the preconditioner (transposing FU) -----------------------------------
 
    ierr = compress_nsy_sfsai(nn_A,nt_FL,nt_FU,iat_FL,ja_FL,iat_FU,ja_FU,coef_FL,coef_FU);
-
    return ierr;
 }

@@ -1,11 +1,20 @@
 import numpy as np
-from scipy.sparse import csr_matrix
+from scipy.sparse import csr_matrix, isspmatrix_csr
 from pyamg.amg_core import cptEMIN
 
-def EMIN(itmax,tol,condmax,precType,fcnodes,A,P0,TV,pattern):
+def EMIN(itmax,tol,condmax,precType,fcnodes,Ain,P0,TV,pattern):
     '''
     Wrapper for the energy minimization
     '''
+
+    if not isspmatrix_csr(Ain):
+        A = Ain.copy().tocsr()
+    else:
+        A = Ain
+
+    if not A.has_sorted_indices:
+        A.sort_indices()
+
     # Unpack A
     nn = A.shape[0]
     iat_A  = A.indptr

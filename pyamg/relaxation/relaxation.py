@@ -1077,7 +1077,14 @@ def schwarz_parameters(A, subdomain=None, subdomain_ptr=None,
                             inv_subblock_ptr)
     return A.schwarz_parameters
 
-def sfsai_nsy(A, kpow=100, nnzr_max=100, tau_pref=0.01, tau_post=0.0):
+def sfsai_nsy(Ain, kpow=100, nnzr_max=100, tau_pref=0.01, tau_post=0.0):
+
+    if not sparse.isspmatrix_csr(Ain):
+        A = Ain.copy().tocsr()
+    else:
+        A = Ain
+    if not A.has_sorted_indices:
+        A.sort_indices()
 
     nn = A.shape[0]
     nt = A.nnz
@@ -1095,6 +1102,8 @@ def sfsai_nsy(A, kpow=100, nnzr_max=100, tau_pref=0.01, tau_post=0.0):
     ierr = amg_core.sfsai_nsy(kpow,nnzr_max,tau_pref,tau_post,nn,nt,iat,ja,coef,
                               iat_FL,ja_FL,coef_FL,iat_FU,ja_FU,coef_FU)
     if (ierr != 0):
+        from scipy.io import mmwrite
+        mmwrite( "A_FSAIerror.mtx", A )
         raise ValueError('Error in sfsai_nsy')
         return -1
 
