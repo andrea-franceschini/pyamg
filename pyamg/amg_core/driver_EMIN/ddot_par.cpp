@@ -1,0 +1,1 @@
+../cptEMIN/ddot_par.cpp

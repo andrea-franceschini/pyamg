@@ -53,8 +53,11 @@ def EMIN(itmax,tol,condmax,precType,fcnodes,Ain,P0,TV,pattern):
     # Call the c function
     #from scipy.io import mmwrite
     #from numpy import savetxt
-    #savetxt('TV.txt',TV)
-    #mmwrite('A.mtx',A)
+    #mmwrite('PATT_1.mtx',pattern,symmetry='general')
+    #mmwrite('A_1.mtx',A,symmetry='general')
+    #mmwrite('T_1.mtx',P0,symmetry='general')
+    #savetxt('TV_1.txt',TV, header=str(TV.shape))
+    #savetxt('fc_1.txt',fcnodes, fmt='%3d')
     ierr = cptEMIN(itmax,tol,condmax,precType,nn,nc,ntv,fcnodes,iat_A,ja_A,coef_A,
                    iat_P0,ja_P0,coef_P0,TV_1d,iat_patt,ja_patt,iat_Pout,ja_Pout,
                    coef_Pout,info)

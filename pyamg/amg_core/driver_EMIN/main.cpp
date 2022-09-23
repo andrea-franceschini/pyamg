@@ -192,8 +192,9 @@ char line[1024];
    ifstream fileTV(TV_file);
    // Read header
    k = 0;
-   fileTV >> kk >> ntv;
-   if (kk != nn_A) exit(1);
+   std::string str;
+   fileTV >> str >> str >> ntv >> str;
+   //if (kk != nn_A) exit(1);
    // Allocate and read TV matrix
    double **TV   = (double**) malloc( nn_A*sizeof(double*) );
    double *TVbuf = (double*) malloc( (ntv*nn_A)*sizeof(double) );
@@ -219,8 +220,7 @@ char line[1024];
    // Count coarse nodes and adjust indices of coarse nodes
    int nn_C = 0;
    for (int i = 0; i < nn_A; i++){
-      if (fcnode[i] > 0) {
-         fcnode[i]--;
+      if (fcnode[i] >= 0) {
          nn_C++;
       }
    }
@@ -286,6 +286,12 @@ char line[1024];
                    ja_Pnew, nt_patt+nn_C,
                    coef_Pnew, nt_patt+nn_C,
                    info, 8 );
+   cout << "ierr " << ierr << endl;
+   
+   cout << "Printing Final Prolongation" << endl;
+   FILE *pfile = fopen("Prol_EMIN.csr","w"); if (!pfile) exit(1);
+   wrCSRmat(pfile,false,nn_P,iat_Pnew,ja_Pnew,coef_Pnew);
+   fclose(pfile);
 
    exit(0);
 

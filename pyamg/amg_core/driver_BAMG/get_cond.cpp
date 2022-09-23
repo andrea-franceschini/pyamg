@@ -1,0 +1,1 @@
+../BAMG_prol/get_cond.cpp

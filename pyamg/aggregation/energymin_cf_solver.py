@@ -493,6 +493,10 @@ def _extend_hierarchy(levels, strength, aggregate, smooth, improve_candidates,
             fcnodes = np.ones((nn_S,), dtype=np.int32)
             fcnodes[Fpts] = -1
 
+            #mmwrite('S_1.mtx',S,symmetry='general')
+            #savetxt('TV_1.txt',B, header=str(B.shape))
+            #savetxt('fc_1.txt',fcnodes, fmt='%3d')
+
             # Compute prolongation
             ierr = cptBAMGProl( len(levels), verbosity, itmax_vol, dist_min, dist_max,
                                 mmax, maxcond, maxrownrm, tol_vol, eps, nn_S, iat_S,
@@ -502,6 +506,7 @@ def _extend_hierarchy(levels, strength, aggregate, smooth, improve_candidates,
                 raise ValueError('Error in cptBAMGProl')
 
             T = csr_matrix((coef_I, ja_I, iat_I), shape=(nn_I, nc_I))
+            #mmwrite('T_1.mtx',T,symmetry='general')
             T = T.tobsr()
 
     else:
@@ -545,10 +550,11 @@ def _extend_hierarchy(levels, strength, aggregate, smooth, improve_candidates,
             pos = np.where(fcnodes[ii]<0)[0]
             pattern = csr_matrix((pp[pos], (ii[pos],jj[pos])),shape=pattern.shape)
 
+            #print(itmax_EMIN,tol_EMIN,condmax_EMIN,precType)
             #mmwrite('PATT_' + str(len(levels)) + '.mtx',pattern)
             #mmwrite('A_' + str(len(levels)) + '.mtx',A)
             #mmwrite('T_' + str(len(levels)) + '.mtx',T)
-            #savetxt('TV_' + str(len(levels)) + '.txt',levels[-1].B)
+            #savetxt('TV_' + str(len(levels)) + '.txt',levels[-1].B, header=str(levels[-1].B.shape))
             #savetxt('fc_' + str(len(levels)) + '.txt',fcnodes, fmt='%3d')
             P = EMIN(itmax_EMIN,tol_EMIN,condmax_EMIN,precType,fcnodes,A,T,levels[-1].B,pattern)
             P = P.tobsr()

@@ -5,6 +5,8 @@
 *.swp
 *.dSYM
 *.whl
+*.o
+*.out
 
 # individual files
 pyamg/version.py
