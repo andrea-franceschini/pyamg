@@ -3,10 +3,14 @@
 # Flag to activate Andrea & Carlo DEBUG prints
 DEBUG_AC = False
 
+if DEBUG_AC:
+    from numpy import savetxt
+    from scipy.io import mmwrite
+
 from warnings import warn
 import numpy as np
 from scipy.sparse import csr_matrix, isspmatrix_csr, isspmatrix_bsr,\
-    csc_matrix, SparseEfficiencyWarning
+    csc_matrix, SparseEfficiencyWarning, find, bsr_matrix
 from scipy.sparse import eye as speye
 
 from ..multilevel import MultilevelSolver
@@ -25,10 +29,14 @@ from .aggregate import standard_aggregation, naive_aggregation, \
 from .tentative import fit_candidates
 from .smooth import energy_prolongation_smoother
 from ..classical import split
+from pyamg.amg_core import cptBAMGProl
+from .mkPattern import mkPatt
+from .EMIN import EMIN
 
 def energymin_cf_solver(A, B=None, BH=None,
                         symmetry='hermitian', strength='symmetric',
                         aggregate='standard', smooth='energy',
+                        prolongation='injection',
                         presmoother=('block_gauss_seidel',
                                      {'sweep': 'symmetric'}),
                         postsmoother=('block_gauss_seidel',
@@ -37,8 +45,7 @@ def energymin_cf_solver(A, B=None, BH=None,
                                             {'sweep': 'symmetric',
                                              'iterations': 4}),
                         max_levels=10, max_coarse=10,
-                        diagonal_dominance=False, keep=False, opts=None,
-                        **kwargs):
+                        diagonal_dominance=False, keep=False, **kwargs):
     """Create a multilevel solver using energy-min AMG
 
     See the notes below, for the major differences with the classical-style
@@ -285,6 +292,7 @@ def energymin_cf_solver(A, B=None, BH=None,
     improve_candidates =\
         levelize_smooth_or_improve_candidates(improve_candidates, max_levels)
     smooth = levelize_smooth_or_improve_candidates(smooth, max_levels)
+    prolongation = levelize_smooth_or_improve_candidates(prolongation, max_levels)
 
     # Construct multilevel structure
     levels = []
@@ -299,7 +307,7 @@ def energymin_cf_solver(A, B=None, BH=None,
     while len(levels) < max_levels and \
             int(levels[-1].A.shape[0]/get_blocksize(levels[-1].A)) > max_coarse:
         _extend_hierarchy(levels, strength, aggregate, smooth,
-                          improve_candidates, diagonal_dominance, keep, opts)
+                          improve_candidates, prolongation, diagonal_dominance, keep)
 
     ml = MultilevelSolver(levels, **kwargs)
     change_smoothers(ml, presmoother, postsmoother)
@@ -307,7 +315,7 @@ def energymin_cf_solver(A, B=None, BH=None,
 
 
 def _extend_hierarchy(levels, strength, aggregate, smooth, improve_candidates,
-                      diagonal_dominance=False, keep=True, opts=None):
+                      prolongation, diagonal_dominance=False, keep=True):
     """Extend the multigrid hierarchy.
 
     Service routine to implement the strength of connection, aggregation,
@@ -429,38 +437,10 @@ def _extend_hierarchy(levels, strength, aggregate, smooth, improve_candidates,
             BH = relaxation_as_linear_operator((fn, kwargs), AH, b) * BH
             levels[-1].BH = BH
 
-    # @@@@@@@@@@@@ TEMPORARY HARDCODED PARAMETERS - START
-    BAMG = False
-    EMIN_AC = False
-    if (opts is not None):
-        BAMG = 'BAMG' in opts
-        EMIN_AC = 'EMIN_AC' in opts
-    verbosity = 0
-    itmax_vol = 100
-    dist_min = 1
-    dist_max = 6
-    mmax = 6
-    maxcond = 1.e13
-    maxrownrm = 5.0
-    tol_vol = 0.01
-    eps = 1e-10
-    avg_nnzr = 30
-    kpow = 1
-    itmax_EMIN = 5
-    tol_EMIN = 0.01
-    condmax_EMIN = 1.e10
-    precType = 'jacobi'
-    from pyamg.amg_core import cptBAMGProl
-    from .mkPattern import mkPatt
-    from .EMIN import EMIN
-    from scipy.io import mmwrite
-    from scipy.sparse import find, bsr_matrix
-    from numpy import savetxt
-    # @@@@@@@@@@@@ TEMPORARY HARDCODED PARAMETERS - END
-
     # Compute tentative T
     if classical_CF:
-        if not BAMG:
+        fn, kwargs = unpack_arg(prolongation[len(levels)-1])
+        if fn != 'least_squares':
             # For classical C/F splittings, energy_prolongation_smoother below will
             # enforce T Bc = B
             T = Cpt_params[1]['P_I'].copy()
@@ -468,7 +448,27 @@ def _extend_hierarchy(levels, strength, aggregate, smooth, improve_candidates,
                 TH = Cpt_params[1]['P_I'].copy()
         else:
             if A.symmetry == 'nonsymmetric':
-                raise ValueError(f'BAMG does not support nonsymmetric matrices')
+                raise ValueError(f'least_squares does not support nonsymmetric matrices')
+
+            # Set default parameters (only for advanced users)
+            itmax_vol = 100
+            dist_min = 1
+            mmax = B.shape[1]
+            maxcond = 1.e13
+            tol_vol = 0.01
+            eps = 1e-10
+
+            # Set default parameters
+            verbosity_LS = 0
+            dist_max = 6
+            maxrownrm = 5.0
+            # Extract arguments from kwargs
+            if 'verbosity' in kwargs:
+                verbosity_LS = kwargs['verbosity']
+            if 'dist' in kwargs:
+                dist_max = kwargs['dist']
+            if 'max_row_norm' in kwargs:
+                maxrownrm = kwargs['max_row_norm']
 
             # Total number of unknowns
             nn_C = C.shape[0]
@@ -501,7 +501,7 @@ def _extend_hierarchy(levels, strength, aggregate, smooth, improve_candidates,
             B = Q
 
             # Compute prolongation
-            ierr = cptBAMGProl( len(levels), verbosity, itmax_vol, dist_min, dist_max,
+            ierr = cptBAMGProl( len(levels), verbosity_LS, itmax_vol, dist_min, dist_max,
                                 mmax, maxcond, maxrownrm, tol_vol, eps, nn_C, iat_C,
                                 ja_C, B.shape[1], fcnodes, B.flatten(), nn_I, nt_I,
                                 iat_I, ja_I, coef_I, c_mark )
@@ -542,40 +542,63 @@ def _extend_hierarchy(levels, strength, aggregate, smooth, improve_candidates,
     # improved for algebraically smooth error.
     fn, kwargs = unpack_arg(smooth[len(levels)-1])
     if fn == 'energy':
-        if not EMIN_AC:
-            P = energy_prolongation_smoother(A, T, C, B, levels[-1].B,
-                                             Cpt_params=Cpt_params,
-                                             force_fit_candidates=classical_CF,
-                                             **kwargs)
-        else:
-            fcnodes = -np.ones((C.shape[0],), dtype=np.int32)
-            fcnodes[Cpts] = range( 0, len(Cpts) )
-            pattern = mkPatt(C,T,avg_nnzr,kpow)
-            print('Pattern avg nnzr (including C nodes): ',pattern.nnz/pattern.shape[0])
+        P = energy_prolongation_smoother(A, T, C, B, levels[-1].B,
+                                         Cpt_params=Cpt_params,
+                                         force_fit_candidates=classical_CF,
+                                         **kwargs)
+    elif fn == 'EMIN':
+        # Set default parameters (only for advanced users)
+        condmax_EMIN = 1.e10
+        precType = 'jacobi'
+        #  Set default parameters
+        verbosity_EMIN = 0
+        avg_nnzr = 30
+        kpow = 1
+        itmax_EMIN = 5
+        tol_EMIN = 0.01
+        # Extract arguments from kwargs
+        if 'verbosity' in kwargs:
+            verbosity_EMIN = kwargs['verbosity']
+        if 'average_nnzr' in kwargs:
+            avg_nnzr = kwargs['average_nnzr']
+        if 'power_pattern' in kwargs:
+            kpow = kwargs['power_pattern']
+        if 'itmax' in kwargs:
+            itmax_EMIN = kwargs['itmax']
+        if 'tol' in kwargs:
+            tol_EMIN = kwargs['tol']
 
-            # Remove coaese rows from pattern
-            [ii,jj,pp] = find(pattern)
-            pos = np.where(fcnodes[ii]<0)[0]
-            pattern = csr_matrix((pp[pos], (ii[pos],jj[pos])),shape=pattern.shape)
+        fcnodes = -np.ones((C.shape[0],), dtype=np.int32)
+        fcnodes[Cpts] = range( 0, len(Cpts) )
+        pattern = mkPatt(C,T,avg_nnzr,kpow)
+        if verbosity_EMIN > 0:
+            print('Pattern avg nnzr (including C nodes): {:5.2f}'.format(
+                  pattern.nnz/pattern.shape[0]))
 
-            #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-            if DEBUG_AC:
-                mmwrite('C_' + str(len(levels)) + '.mtx',C)
-                mmwrite('PATT_' + str(len(levels)) + '.mtx',pattern)
-                mmwrite('A_' + str(len(levels)) + '.mtx',A)
-                mmwrite('T_' + str(len(levels)) + '.mtx',T)
-                savetxt('TV_' + str(len(levels)) + '.txt',levels[-1].B,
-                        header=str(levels[-1].B.shape))
-                savetxt('fc_' + str(len(levels)) + '.txt',fcnodes, fmt='%3d')
-            #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+        # Remove coaese rows from pattern
+        [ii,jj,pp] = find(pattern)
+        pos = np.where(fcnodes[ii]<0)[0]
+        pattern = csr_matrix((pp[pos], (ii[pos],jj[pos])),shape=pattern.shape)
 
-            P = EMIN(itmax_EMIN,tol_EMIN,condmax_EMIN,precType,fcnodes,A,T,levels[-1].B,pattern)
-            P = P.tobsr()
+        #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+        if DEBUG_AC:
+            mmwrite('C_' + str(len(levels)) + '.mtx',C)
+            mmwrite('PATT_' + str(len(levels)) + '.mtx',pattern)
+            mmwrite('A_' + str(len(levels)) + '.mtx',A)
+            mmwrite('T_' + str(len(levels)) + '.mtx',T)
+            savetxt('TV_' + str(len(levels)) + '.txt',levels[-1].B,
+                    header=str(levels[-1].B.shape))
+            savetxt('fc_' + str(len(levels)) + '.txt',fcnodes, fmt='%3d')
+        #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
-            #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-            if DEBUG_AC:
-                mmwrite('Pemin_' + str(len(levels)) + '.mtx',P)
-            #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+        P = EMIN(verbosity_EMIN,itmax_EMIN,tol_EMIN,condmax_EMIN,precType,fcnodes,
+                 A,T,levels[-1].B,pattern)
+        P = P.tobsr()
+
+        #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+        if DEBUG_AC:
+            mmwrite('Pemin_' + str(len(levels)) + '.mtx',P)
+        #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
     elif fn is None:
         P = T

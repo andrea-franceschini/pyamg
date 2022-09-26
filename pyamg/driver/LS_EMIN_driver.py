@@ -8,7 +8,7 @@ from pyamg.util.linalg import norm
 
 from scipy.sparse import isspmatrix_csr
 
-from read_bin import read_bin_csr, read_bin_rbm
+from read_bin_CJ import read_bin_csr, read_bin_rbm
 
 #-----------------------------------------------------------------------------------------
 
@@ -26,14 +26,11 @@ def run_test(solver, b, x0, cycle, krylov, tol, maxiter):
     # Print residual norm before solve
     print("Before Solve: ||b-Ax|| = %1.3e"%(norm( ravel(b) - ravel(A*x0) )) )
 
-    def callback(x):
-        print( "%15.6e"%( norm( ravel( b )-ravel( A*x ) ) ) )
-
     # Carry out solve
     residuals = []
     start = time.time()
     x = solver.solve(b, x0=x0, accel=krylov, residuals=residuals, 
-                     tol=tol, maxiter=maxiter, cycle=cycle, callback=callback)
+                     tol=tol, maxiter=maxiter, cycle=cycle)
     end = time.time(); solve_time = end-start
     cyc_comp = solver.cycle_complexity(cycle=cycle)
     resid_rate = (residuals[-1]/residuals[0])**(1.0/(len(residuals)))
@@ -62,14 +59,12 @@ def run_test(solver, b, x0, cycle, krylov, tol, maxiter):
 numpy.random.seed(10)
 
 # Define inputs
-matname_in = 'MATRICES/Cubo_246389.csr.npy'
-rbmname_in = 'MATRICES/Cubo_246389.RBM.npy'
 #matname_in = 'MATRICES/Cubo_35199.csr.npy'
 #rbmname_in = 'MATRICES/Cubo_35199.RBM.npy'
 #matname_in = 'MATRICES/Cubo_4820.csr.npy'
 #rbmname_in = 'MATRICES/Cubo_4820.RBM.npy'
-#matname_in = 'MATRICES/Cubo_591.csr.npy'
-#rbmname_in = 'MATRICES/Cubo_591.RBM.npy'
+matname_in = 'MATRICES/Cubo_591.csr.npy'
+rbmname_in = 'MATRICES/Cubo_591.RBM.npy'
 
 # Read matrix and test space from file
 A = read_bin_csr(matname_in)
@@ -86,11 +81,10 @@ BH = B.copy()
 b = numpy.ones((A.shape[0],1))
 x0 = zeros_like(b)
 
-##
 # Solver Parameters
 
 max_levels=15
-max_coarse=150
+max_coarse=500
 coarse_solver='pinv'
 coarse_solver='cholesky'
 symmetry='hermitian'
@@ -106,9 +100,9 @@ krylov= 'cg'
 # Set Solver Parameters
 
 # Method to improve tentative prolongation
-smooth = ('energy', {'krylov':'cg', 'maxiter':4, 'degree':1, 'weighting':'diagonal' })
-smooth = None
-smooth = ('energy')
+#smooth = ('energy', {'krylov':'cg', 'maxiter':4, 'degree':1, 'weighting':'diagonal' })
+#smooth = None
+smooth = ('EMIN', {'average_nnzr':31, 'power_pattern':1, 'itmax':6, 'tol':0.01, 'verbosity':1})
 
 # Strength of connection
 #strength = ('classical', {'theta' : 0.35})
@@ -116,29 +110,33 @@ smooth = ('energy')
 strength = ('symmetric', {'theta' : 0.0})
 
 # Maximum Indepent Set
-CF_for_enmin = 'PMIS'
 #CF_for_enmin = 'RS'
 #CF_for_enmin = 'standard'
+CF_for_enmin = 'PMIS'
 
 # Method to improve initial test space
 #improve_candidates = [ ('block_gauss_seidel', {'sweep':'symmetric', 'iterations':10}) ]
-improve_candidates = [ ('gauss_seidel', {'sweep':'symmetric', 'iterations':1}) ]
+#improve_candidates = [ ('gauss_seidel', {'sweep':'symmetric', 'iterations':1}) ]
 improve_candidates = None
 
+# Choose tentative prolongation algorithm
+#prolong = 'injection'
+prolong = ( 'least_squares', {'dist':6, 'max_row_norm':5.0, 'verbosity':0} )
+
 # Pre and Post smoother
-pre_smoother =('sfsai_nsy', {'sweep':'symmetric', 'iterations':1})
-post_smoother=('sfsai_nsy', {'sweep':'symmetric', 'iterations':1})
 #pre_smoother =('jacobi', {'iterations':1})
 #post_smoother=('jacobi', {'iterations':1})
 #pre_smoother =('gauss_seidel', {'sweep':'forward', 'iterations':1})
 #post_smoother=('gauss_seidel', {'sweep':'backward', 'iterations':1})
 #pre_smoother =('block_gauss_seidel', {'sweep':'forward', 'iterations':1})
 #post_smoother=('block_gauss_seidel', {'sweep':'backward', 'iterations':1})
+pre_smoother =('sfsai_nsy', {'sweep':'symmetric', 'iterations':1})
+post_smoother=('sfsai_nsy', {'sweep':'symmetric', 'iterations':1})
 
 # Treatment of diagonal dominant rows
 diag_dom = (True, {'theta':1.1})
 
-# Run two tests
+# Run
 
 print("\n----------   energymin_cf_solver ----------")
 start = time.time()
@@ -146,18 +144,7 @@ enmin_cf = energymin_cf_solver(A, B=B, BH=BH, strength=strength, smooth=smooth,
              improve_candidates=improve_candidates, aggregate=CF_for_enmin,
              presmoother=pre_smoother, postsmoother=post_smoother, keep=True,
              max_levels=max_levels, max_coarse=max_coarse, diagonal_dominance=diag_dom,
-             coarse_solver=coarse_solver, symmetry=symmetry, opts={'BAMG','EMIN_AC'})
+             prolongation=prolong, coarse_solver=coarse_solver, symmetry=symmetry)
 end = time.time(); setup_time = end-start
-        
-run_test(enmin_cf, b, x0, cycle, krylov, tol, maxiter)
 
-#print("\n----------   rootnode_solver ----------")
-#start = time.time()
-#RN = rootnode_solver(A, B=B, BH=BH, strength=strength, smooth=smooth,
-#             improve_candidates=improve_candidates, aggregate=CF_for_RN,
-#             presmoother=pre_smoother, postsmoother=post_smoother, keep=True,
-#             max_levels=max_levels, max_coarse=max_coarse,
-#             coarse_solver=coarse_solver, symmetry=symmetry)
-#end = time.time(); setup_time = end-start
-#        
-#run_test(RN, b, x0, cycle, krylov, tol, maxiter)
+run_test(enmin_cf, b, x0, cycle, krylov, tol, maxiter)
