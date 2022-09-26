@@ -14,6 +14,7 @@ from warnings import warn
 
 import numpy as np
 from scipy import sparse
+from scipy.sparse import dia_matrix, diags
 from . import amg_core
 from .relaxation.relaxation import jacobi
 from .util.linalg import approximate_spectral_radius
@@ -312,11 +313,24 @@ def symmetric_strength_of_connection(A, theta=0):
                                   shape=(int(M / R), int(N / C)))
             return symmetric_strength_of_connection(A, theta)
 
-    # Strength represents "distance", so take the magnitude
-    S.data = np.abs(S.data)
+    DIAG_SCAL = True
+    if DIAG_SCAL:
 
-    # Scale S by the largest magnitude entry in each row
-    S = scale_rows_by_largest_entry(S)
+        #@@@@@@@@@@@@@@@ CARLO @@@@@@@@@@@@@@@
+        # Scale strength by the diagonal entry
+        DD = 1.0 / np.sqrt(S.diagonal())
+        DD = diags(DD)
+        S = abs(DD*S*DD)
+        S.data = np.abs(S.data)
+        #@@@@@@@@@@@@@@@ CARLO @@@@@@@@@@@@@@@
+
+    else:
+
+        # Strength represents "distance", so take the magnitude
+        S.data = np.abs(S.data)
+
+        # Scale S by the largest magnitude entry in each row
+        S = scale_rows_by_largest_entry(S)
 
     return S
 

@@ -1077,7 +1077,7 @@ def schwarz_parameters(A, subdomain=None, subdomain_ptr=None,
                             inv_subblock_ptr)
     return A.schwarz_parameters
 
-def sfsai_nsy(Ain, kpow=100, nnzr_max=30, tau_pref=0.01, tau_post=0.0):
+def sfsai_nsy(Ain, kpow=100, nnzr_max=50, tau_pref=0.01, tau_post=0.0):
 
     if not sparse.isspmatrix_csr(Ain):
         A = Ain.copy().tocsr()

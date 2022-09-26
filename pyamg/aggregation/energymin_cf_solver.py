@@ -1,5 +1,7 @@
 """Support for aggregation-based AMG."""
 
+# Flag to activate Andrea & Carlo DEBUG prints
+DEBUG_AC = False
 
 from warnings import warn
 import numpy as np
@@ -435,7 +437,7 @@ def _extend_hierarchy(levels, strength, aggregate, smooth, improve_candidates,
         EMIN_AC = 'EMIN_AC' in opts
     verbosity = 0
     itmax_vol = 100
-    dist_min = 2
+    dist_min = 1
     dist_max = 6
     mmax = 6
     maxcond = 1.e13
@@ -456,17 +458,11 @@ def _extend_hierarchy(levels, strength, aggregate, smooth, improve_candidates,
     from numpy import savetxt
     # @@@@@@@@@@@@ TEMPORARY HARDCODED PARAMETERS - END
 
-    #if EMIN_AC:
-    #    A1 = A.copy()
-    #    if not isspmatrix_csr(A1):
-    #        A1 = A1.tocsr()
-    #    if not A.has_sorted_indices:
-    #        A1.sort_indices()
-
     # Compute tentative T
     if classical_CF:
         if not BAMG:
-            # For classical C/F splittings, energy_prolongation_smoother below will enforce T Bc = B
+            # For classical C/F splittings, energy_prolongation_smoother below will
+            # enforce T Bc = B
             T = Cpt_params[1]['P_I'].copy()
             if A.symmetry == 'nonsymmetric':
                 TH = Cpt_params[1]['P_I'].copy()
@@ -474,14 +470,12 @@ def _extend_hierarchy(levels, strength, aggregate, smooth, improve_candidates,
             if A.symmetry == 'nonsymmetric':
                 raise ValueError(f'BAMG does not support nonsymmetric matrices')
 
-            # Removing diagonal from strength of connection matrix
-            S = C - speye(C.shape[0], C.shape[1], format='csr')
             # Total number of unknowns
-            nn_S = S.shape[0]
-            iat_S = S.indptr
-            ja_S = S.indices
+            nn_C = C.shape[0]
+            iat_C = C.indptr
+            ja_C = C.indices
             # Initialize arrays
-            nn_I = nn_S
+            nn_I = nn_C
             nc_I = ncoarse
             nt_I = nn_I*mmax
             iat_I = np.empty((nn_I+1,), dtype=np.int32)
@@ -490,24 +484,37 @@ def _extend_hierarchy(levels, strength, aggregate, smooth, improve_candidates,
             c_mark = np.empty((nn_I,), dtype=np.int32)
 
             # Create F/C nodes indicator
-            fcnodes = np.ones((nn_S,), dtype=np.int32)
+            fcnodes = np.ones((nn_C,), dtype=np.int32)
             fcnodes[Fpts] = -1
 
-            #mmwrite('S_1.mtx',S,symmetry='general')
-            #savetxt('TV_1.txt',B, header=str(B.shape))
-            #savetxt('fc_1.txt',fcnodes, fmt='%3d')
+            #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+            if DEBUG_AC:
+                if len(levels) == 1:
+                    mmwrite('C_X.mtx',C,symmetry='general')
+                    savetxt('TV_X.txt',B, header=str(B.shape))
+                    savetxt('fc_X.txt',fcnodes, fmt='%3d')
+            #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+            # Perform a QR on the candidates (generally it has only little impact)
+            from scipy.linalg import qr
+            Q, R = qr(B,mode='economic')
+            B = Q
 
             # Compute prolongation
             ierr = cptBAMGProl( len(levels), verbosity, itmax_vol, dist_min, dist_max,
-                                mmax, maxcond, maxrownrm, tol_vol, eps, nn_S, iat_S,
-                                ja_S, B.shape[1], fcnodes, B.flatten(), nn_I, nt_I,
+                                mmax, maxcond, maxrownrm, tol_vol, eps, nn_C, iat_C,
+                                ja_C, B.shape[1], fcnodes, B.flatten(), nn_I, nt_I,
                                 iat_I, ja_I, coef_I, c_mark )
             if (ierr != 0):
                 raise ValueError('Error in cptBAMGProl')
 
             T = csr_matrix((coef_I, ja_I, iat_I), shape=(nn_I, nc_I))
-            #mmwrite('T_1.mtx',T,symmetry='general')
             T = T.tobsr()
+            #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+            if DEBUG_AC:
+                if len(levels) == 1:
+                    mmwrite('T_X.mtx',T,symmetry='general')
+            #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
     else:
         # Compute the tentative prolongator, T, which is a tentative interpolation
@@ -544,21 +551,31 @@ def _extend_hierarchy(levels, strength, aggregate, smooth, improve_candidates,
             fcnodes = -np.ones((C.shape[0],), dtype=np.int32)
             fcnodes[Cpts] = range( 0, len(Cpts) )
             pattern = mkPatt(C,T,avg_nnzr,kpow)
+            print('Pattern avg nnzr (including C nodes): ',pattern.nnz/pattern.shape[0])
 
             # Remove coaese rows from pattern
             [ii,jj,pp] = find(pattern)
             pos = np.where(fcnodes[ii]<0)[0]
             pattern = csr_matrix((pp[pos], (ii[pos],jj[pos])),shape=pattern.shape)
 
-            #print(itmax_EMIN,tol_EMIN,condmax_EMIN,precType)
-            #mmwrite('PATT_' + str(len(levels)) + '.mtx',pattern)
-            #mmwrite('A_' + str(len(levels)) + '.mtx',A)
-            #mmwrite('T_' + str(len(levels)) + '.mtx',T)
-            #savetxt('TV_' + str(len(levels)) + '.txt',levels[-1].B, header=str(levels[-1].B.shape))
-            #savetxt('fc_' + str(len(levels)) + '.txt',fcnodes, fmt='%3d')
+            #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+            if DEBUG_AC:
+                mmwrite('C_' + str(len(levels)) + '.mtx',C)
+                mmwrite('PATT_' + str(len(levels)) + '.mtx',pattern)
+                mmwrite('A_' + str(len(levels)) + '.mtx',A)
+                mmwrite('T_' + str(len(levels)) + '.mtx',T)
+                savetxt('TV_' + str(len(levels)) + '.txt',levels[-1].B,
+                        header=str(levels[-1].B.shape))
+                savetxt('fc_' + str(len(levels)) + '.txt',fcnodes, fmt='%3d')
+            #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
             P = EMIN(itmax_EMIN,tol_EMIN,condmax_EMIN,precType,fcnodes,A,T,levels[-1].B,pattern)
             P = P.tobsr()
-            #mmwrite('Pemin_' + str(len(levels)) + '.mtx',P)
+
+            #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+            if DEBUG_AC:
+                mmwrite('Pemin_' + str(len(levels)) + '.mtx',P)
+            #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
     elif fn is None:
         P = T

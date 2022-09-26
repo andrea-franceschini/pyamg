@@ -1,4 +1,5 @@
 //#include <iostream>  // to use: cout,endl
+#include <cstdio>
 #include <cmath>
 
 #include "transp_Patt.h"
@@ -25,9 +26,6 @@ int mk_pattern(const int kpow, const double tau_pref, const int nnzr_max, const 
          jcol = ja_A[ind];
       }
       diag_A[i] = std::abs(coef_A[ind]);
-      ////////////////////////////
-      //cout << i << " " << jcol << " " << diag_A[i] << endl;
-      ///////////////////////////
    }
 
    // Filter A
@@ -60,7 +58,7 @@ int mk_pattern(const int kpow, const double tau_pref, const int nnzr_max, const 
    //fclose(ofile);
    /////////////////////////////////////////////////////
 
-   //double nn_A_d = static_cast<double>(nn_A);
+   double nn_A_d = static_cast<double>(nn_A);
    //double nt_FA_d = static_cast<double>(nt_FA);
    //fprintf(stdout,"Initial Filtered Pattern avg nnzr:           %10.2f\n",nt_FA_d / nn_A_d);
 
@@ -127,8 +125,14 @@ int mk_pattern(const int kpow, const double tau_pref, const int nnzr_max, const 
       return 2;
    }
 
-   //double nt_P_d = static_cast<double>(iat_Pout[nn_A]);
-   //fprintf(stdout,"Final Pattern avg nnzr:                      %10.2f\n",nt_P_d / nn_A_d);
+   double nt_P_d = static_cast<double>(iat_Pout[nn_A]);
+   int max_nnzr = 0;
+   for (int i = 0; i < nn_A; i++){
+      int len = iat_Pout[i+1]-iat_Pout[i];
+      max_nnzr = (max_nnzr>len) ?  max_nnzr:len;
+   }
+   printf("Final Pattern avg nnzr:                      %10.2f\n",nt_P_d / nn_A_d);
+   printf("Final Pattern max nnzr:                      %10d\n",max_nnzr);
 
    /////////////////////////////////////////////////////
    //ofile = fopen("mat_Patt.csr","w"); if (!ofile) exit(1);

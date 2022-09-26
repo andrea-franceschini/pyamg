@@ -703,7 +703,7 @@ def solveSystem( A, FL, FU, tol = 1.e-8, restart = 100, maxiter = 1000, plot = T
 
 
 def setup_sfsai_nsy(lvl, iterations=DEFAULT_NITER, sweep=DEFAULT_SWEEP,
-                    omega=1.0, kpow=100, nnzr_max=30, tau_pref=0.01, tau_post=0.0):
+                    omega=1.0, kpow=100, nnzr_max=50, tau_pref=0.01, tau_post=0.0):
     """Set up static nonsymmetric FSAI smoothing."""
 
     matrix_asformat(lvl, 'A', 'csr')
@@ -717,16 +717,16 @@ def setup_sfsai_nsy(lvl, iterations=DEFAULT_NITER, sweep=DEFAULT_SWEEP,
     vals = np.real_if_close(vals)
     #print( "Max eig: ", vals[0] )
 
-    #print( solveSystem( lvl.Acsr, FL, FU ) )
-
     # Attention: has to work as both pre and post smoother
     # For pre smoothing, x has to be initialized to zeros
     if (vals[0] > 2.0):
         omega = 1.9 / vals[0]
+        print('Omega: ',omega)
         def smoother(A, x, b):
             for i in range(0, iterations):
                 x += omega*(FU*(FL*(b - A*x)))
     else:
+        print('Omega: 1.0')
         def smoother(A, x, b):
             for i in range(0, iterations):
                 x += (FU*(FL*(b - A*x)))

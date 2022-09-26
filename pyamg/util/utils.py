@@ -1667,6 +1667,9 @@ def eliminate_diag_dom_nodes(A, C, theta=1.02):
     D_abs = get_diagonal(A_abs, norm_eq=0, inv=False)
     diag_dom_rows = (D_abs > (theta*(A_abs*np.ones((A_abs.shape[0],),
                                                    dtype=A_abs) - D_abs)))
+    #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+    print('# Diag Dom rows:',np.count_nonzero(diag_dom_rows))
+    #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
     # Account for BSR matrices and translate diag_dom_rows from dofs to nodes
     bsize = get_blocksize(A_abs)
