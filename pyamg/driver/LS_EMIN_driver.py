@@ -8,7 +8,7 @@ from pyamg.util.linalg import norm
 
 from scipy.sparse import isspmatrix_csr
 
-from read_bin_CJ import read_bin_csr, read_bin_rbm
+from read_bin import read_bin_csr, read_bin_rbm
 
 #-----------------------------------------------------------------------------------------
 
