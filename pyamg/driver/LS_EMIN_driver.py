@@ -8,7 +8,7 @@ from pyamg.util.linalg import norm
 
 from scipy.sparse import isspmatrix_csr
 
-from read_bin_CJ import read_bin_csr, read_bin_rbm
+from read_bin import read_bin_csr, read_bin_rbm
 
 #-----------------------------------------------------------------------------------------
 
@@ -102,7 +102,7 @@ krylov= 'cg'
 # Method to improve tentative prolongation
 #smooth = ('energy', {'krylov':'cg', 'maxiter':4, 'degree':1, 'weighting':'diagonal' })
 #smooth = None
-smooth = ('EMIN', {'average_nnzr':31, 'power_pattern':1, 'itmax':6, 'tol':0.01, 'verbosity':1})
+smooth = ('EMIN', {'average_nnzr':31, 'power_pattern':1, 'itmax':6, 'tol':0.01, 'verbosity':2})
 
 # Strength of connection
 #strength = ('classical', {'theta' : 0.35})
@@ -121,7 +121,7 @@ improve_candidates = None
 
 # Choose tentative prolongation algorithm
 #prolong = 'injection'
-prolong = ( 'least_squares', {'dist':6, 'max_row_norm':5.0, 'verbosity':0} )
+prolong = ( 'least_squares', {'dist':6, 'max_row_norm':5.0, 'verbosity':2} )
 
 # Pre and Post smoother
 #pre_smoother =('jacobi', {'iterations':1})
@@ -130,8 +130,10 @@ prolong = ( 'least_squares', {'dist':6, 'max_row_norm':5.0, 'verbosity':0} )
 #post_smoother=('gauss_seidel', {'sweep':'backward', 'iterations':1})
 #pre_smoother =('block_gauss_seidel', {'sweep':'forward', 'iterations':1})
 #post_smoother=('block_gauss_seidel', {'sweep':'backward', 'iterations':1})
-pre_smoother =('sfsai_nsy', {'sweep':'symmetric', 'iterations':1})
-post_smoother=('sfsai_nsy', {'sweep':'symmetric', 'iterations':1})
+pre_smoother  =('sfsai_nsy', {'sweep':'symmetric', 'iterations':1, 'average_nnzr':60,
+                'prefiltration_tol':0.01, 'verbosity':2})
+post_smoother =('sfsai_nsy', {'sweep':'symmetric', 'iterations':1, 'average_nnzr':60,
+                'prefiltration_tol':0.01, 'verbosity':2})
 
 # Treatment of diagonal dominant rows
 diag_dom = (True, {'theta':1.1})

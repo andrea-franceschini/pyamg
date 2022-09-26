@@ -23,7 +23,7 @@
  * 1 ---> allocation error for global scratches
  *
 *****************************************************************************************/
-int DEFL_PCG_matfree(const int np, const int prec_type, const int nn,
+int DEFL_PCG_matfree(const int verb, const int np, const int prec_type, const int nn,
                      const int nn_C, const int nn_K, const int ntv, const int *perm,
                      const int *iperm, const double *D_inv, const int *iat_A,
                      const int *ja_A, const double *coef_A, const double Tr_A,
@@ -68,16 +68,16 @@ int DEFL_PCG_matfree(const int np, const int prec_type, const int nn,
    KP_spmat(np,nn,iat_A,ja_A,coef_A,nn_C,iat_patt,ja_patt,vec_P0,vscr,WNALL);
 
    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   #if COMP_ENRG
-   // Permute vec_f from col-major to row-major
-   apply_perm(np,nn_K,perm,vec_f,wscr);
-   // Compute initial energy
-   init_energy = Tr_A + ddot_par(np,nn_K,vec_P0,vscr,ridv) -
+   if (verb >= 2){
+      // Permute vec_f from col-major to row-major
+      apply_perm(np,nn_K,perm,vec_f,wscr);
+      // Compute initial energy
+      init_energy = Tr_A + ddot_par(np,nn_K,vec_P0,vscr,ridv) -
                         2.0*ddot_par(np,nn_K,vec_P0,wscr,ridv);
-   std::cout << std::setprecision(6) << std::scientific;
-   std::cout << "Initial Energy:  " << init_energy << std::endl;
-   std::cout << "Trace of A:      " << Tr_A << std::endl;
-   #endif
+      std::cout << std::setprecision(6) << std::scientific;
+      std::cout << "Initial Energy:  " << init_energy << std::endl;
+      std::cout << "Trace of A:      " << Tr_A << std::endl;
+   }
    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
    // 3 - Subtract vec_f to vscr: vscr <-- vscr - vec_f
    #pragma omp parallel for num_threads(np)
@@ -167,11 +167,11 @@ int DEFL_PCG_matfree(const int np, const int prec_type, const int nn,
 
       if (iter==1){
          DE0 = DEk;
-         printf("%4s %15s %15s\n","iter","Energy","DE");
+         if (verb >= 1) printf("%4s %15s %15s\n","iter","Energy","DE");
       }
       double const dDE = DEk/DE0;
       DE -= DEk;
-      printf("%4d %15.6e %15.6e\n",iter,init_energy+DE,dDE);
+      if (verb >= 1) printf("%4d %15.6e %15.6e\n",iter,init_energy+DE,dDE);
 
       // Check convergence
       exit_test = (iter == itmax) || (dDE < energy_tol);

@@ -10,6 +10,7 @@ namespace py = pybind11;
 
 template <class I, class R>
 int _cptEMIN(
+              I verbosity,
                   I itmax,
                     R tol,
                 R condmax,
@@ -63,6 +64,7 @@ py::array_t<R> & coef_Pout,
     R *_info = py_info.mutable_data();
 
     return cptEMIN <I, R>(
+                verbosity,
                     itmax,
                       tol,
                   condmax,
@@ -100,7 +102,7 @@ PYBIND11_MODULE(cptEMIN, m) {
     options.disable_function_signatures();
 
     m.def("cptEMIN", &_cptEMIN<int, double>,
-        py::arg("itmax"), py::arg("tol"), py::arg("condmax"), py::arg("precType"), py::arg("nn"), py::arg("nc"), py::arg("ntv"), py::arg("fcnodes").noconvert(), py::arg("iat_A").noconvert(), py::arg("ja_A").noconvert(), py::arg("coef_A").noconvert(), py::arg("iat_P0").noconvert(), py::arg("ja_P0").noconvert(), py::arg("coef_P0").noconvert(), py::arg("TV_buff").noconvert(), py::arg("iat_patt").noconvert(), py::arg("ja_patt").noconvert(), py::arg("iat_Pout").noconvert(), py::arg("ja_Pout").noconvert(), py::arg("coef_Pout").noconvert(), py::arg("info").noconvert(),
+        py::arg("verbosity"), py::arg("itmax"), py::arg("tol"), py::arg("condmax"), py::arg("precType"), py::arg("nn"), py::arg("nc"), py::arg("ntv"), py::arg("fcnodes").noconvert(), py::arg("iat_A").noconvert(), py::arg("ja_A").noconvert(), py::arg("coef_A").noconvert(), py::arg("iat_P0").noconvert(), py::arg("ja_P0").noconvert(), py::arg("coef_P0").noconvert(), py::arg("TV_buff").noconvert(), py::arg("iat_patt").noconvert(), py::arg("ja_patt").noconvert(), py::arg("iat_Pout").noconvert(), py::arg("ja_Pout").noconvert(), py::arg("coef_Pout").noconvert(), py::arg("info").noconvert(),
 R"pbdoc(
 MAIN PROGRAM)pbdoc");
 

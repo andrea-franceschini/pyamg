@@ -5,7 +5,8 @@
 
 // MAIN PROGRAM
 template <class I, class R>
-int cptEMIN( I itmax,
+int cptEMIN( I verbosity,
+             I itmax,
              R tol,
              R condmax,
              I precType,
@@ -50,9 +51,9 @@ int cptEMIN( I itmax,
    int nt_A = iat_A[nn];
    int nt_P0 = iat_P0[nn];
    int nt_patt = iat_patt[nn];
-   ierr = EMIN_ImpProl(nthreads,itmax,tol,condmax,precType,nn,nc,ntv,nt_A,nt_P0,nt_patt,
-                       fcnodes,iat_A,ja_A,coef_A,iat_P0,ja_P0,coef_P0,iat_patt,ja_patt,
-                       TV,iat_Pout,ja_Pout,coef_Pout,info);
+   ierr = EMIN_ImpProl(verbosity,nthreads,itmax,tol,condmax,precType,nn,nc,ntv,nt_A,nt_P0,
+                       nt_patt,fcnodes,iat_A,ja_A,coef_A,iat_P0,ja_P0,coef_P0,
+                       iat_patt,ja_patt,TV,iat_Pout,ja_Pout,coef_Pout,info);
 
    return ierr;
 

@@ -6,8 +6,8 @@
 #include "merge_row_patt.h"
 #include "power_patt.h"
 
-int mk_pattern(const int kpow, const double tau_pref, const int nnzr_max, const int nn_A,
-               const int nt_A, const int *const iat_A, const int *const ja_A,
+int mk_pattern(const int verb, const int kpow, const double tau_pref, const int nnzr_max,
+               const int nn_A, const int nt_A, const int *const iat_A, const int *const ja_A,
                const double *const coef_A, int &mmax, int * iat_Pout, const int ja_Pout_size,
                int * ja_Pout){
 
@@ -59,8 +59,10 @@ int mk_pattern(const int kpow, const double tau_pref, const int nnzr_max, const 
    /////////////////////////////////////////////////////
 
    double nn_A_d = static_cast<double>(nn_A);
-   //double nt_FA_d = static_cast<double>(nt_FA);
-   //fprintf(stdout,"Initial Filtered Pattern avg nnzr:           %10.2f\n",nt_FA_d / nn_A_d);
+   if (verb >= 2){
+      double nt_FA_d = static_cast<double>(nt_FA);
+      fprintf(stdout,"Initial Filtered Pattern avg nnzr:           %10.2f\n",nt_FA_d / nn_A_d);
+   }
 
    // Transpose filtered pattern
    int *iat_FT;
@@ -125,14 +127,18 @@ int mk_pattern(const int kpow, const double tau_pref, const int nnzr_max, const 
       return 2;
    }
 
-   double nt_P_d = static_cast<double>(iat_Pout[nn_A]);
-   int max_nnzr = 0;
-   for (int i = 0; i < nn_A; i++){
-      int len = iat_Pout[i+1]-iat_Pout[i];
-      max_nnzr = (max_nnzr>len) ?  max_nnzr:len;
+   if (verb >= 2){
+      int max_nnzr = 0;
+      for (int i = 0; i < nn_A; i++){
+         int len = iat_Pout[i+1]-iat_Pout[i];
+         max_nnzr = (max_nnzr>len) ?  max_nnzr:len;
+      }
+      printf("Final Pattern max nnzr:                      %10d\n",max_nnzr);
    }
-   printf("Final Pattern avg nnzr:                      %10.2f\n",nt_P_d / nn_A_d);
-   printf("Final Pattern max nnzr:                      %10d\n",max_nnzr);
+   if (verb >= 2){
+      double nt_P_d = static_cast<double>(iat_Pout[nn_A]);
+      printf("Final Pattern avg nnzr:                      %10.2f\n",nt_P_d / nn_A_d);
+   }
 
    /////////////////////////////////////////////////////
    //ofile = fopen("mat_Patt.csr","w"); if (!ofile) exit(1);

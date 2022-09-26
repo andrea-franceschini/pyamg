@@ -1077,7 +1077,7 @@ def schwarz_parameters(A, subdomain=None, subdomain_ptr=None,
                             inv_subblock_ptr)
     return A.schwarz_parameters
 
-def sfsai_nsy(Ain, kpow=100, nnzr_max=50, tau_pref=0.01, tau_post=0.0):
+def sfsai_nsy(Ain, verbosity, kpow, nnzr_max, tau_pref, tau_post):
 
     if not sparse.isspmatrix_csr(Ain):
         A = Ain.copy().tocsr()
@@ -1099,7 +1099,7 @@ def sfsai_nsy(Ain, kpow=100, nnzr_max=50, tau_pref=0.01, tau_post=0.0):
     iat_FU = np.empty((nn+1,), dtype=np.int32)
     ja_FU = np.empty((nt_FU,), dtype=np.int32)
     coef_FU = np.empty((nt_FU,), dtype=float)
-    ierr = amg_core.sfsai_nsy(kpow,nnzr_max,tau_pref,tau_post,nn,nt,iat,ja,coef,
+    ierr = amg_core.sfsai_nsy(verbosity,kpow,nnzr_max,tau_pref,tau_post,nn,nt,iat,ja,coef,
                               iat_FL,ja_FL,coef_FL,iat_FU,ja_FU,coef_FU)
     if (ierr != 0):
         from scipy.io import mmwrite

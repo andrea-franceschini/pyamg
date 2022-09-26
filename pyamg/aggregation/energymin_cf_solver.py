@@ -483,6 +483,10 @@ def _extend_hierarchy(levels, strength, aggregate, smooth, improve_candidates,
             coef_I = np.empty((nt_I,), dtype=float)
             c_mark = np.empty((nn_I,), dtype=np.int32)
 
+            if verbosity_LS > 0:
+                print('-------------------------------------------------------')
+                print('Computing Adaptive Least Squares tentative prolongation')
+
             # Create F/C nodes indicator
             fcnodes = np.ones((nn_C,), dtype=np.int32)
             fcnodes[Fpts] = -1
@@ -568,6 +572,9 @@ def _extend_hierarchy(levels, strength, aggregate, smooth, improve_candidates,
         if 'tol' in kwargs:
             tol_EMIN = kwargs['tol']
 
+        if verbosity_EMIN > 0:
+            print('Improving tentative prolongation through energy minimization')
+
         fcnodes = -np.ones((C.shape[0],), dtype=np.int32)
         fcnodes[Cpts] = range( 0, len(Cpts) )
         pattern = mkPatt(C,T,avg_nnzr,kpow)
@@ -594,6 +601,9 @@ def _extend_hierarchy(levels, strength, aggregate, smooth, improve_candidates,
         P = EMIN(verbosity_EMIN,itmax_EMIN,tol_EMIN,condmax_EMIN,precType,fcnodes,
                  A,T,levels[-1].B,pattern)
         P = P.tobsr()
+
+        if verbosity_EMIN > 0:
+            print('------------------------------------------------------------')
 
         #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
         if DEBUG_AC:

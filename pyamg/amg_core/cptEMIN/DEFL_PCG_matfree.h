@@ -1,4 +1,4 @@
-int DEFL_PCG_matfree(const int np, const int prec_type, const int nn,
+int DEFL_PCG_matfree(const int verb, const int np, const int prec_type, const int nn,
                      const int nn_C, const int nn_K, const int ntv, const int *perm,
                      const int *iperm, const double *D_inv, const int *iat_A,
                      const int *ja_A, const double *coef_A, const double Tr_A,

@@ -702,12 +702,38 @@ def solveSystem( A, FL, FU, tol = 1.e-8, restart = 100, maxiter = 1000, plot = T
     return niter1
 
 
-def setup_sfsai_nsy(lvl, iterations=DEFAULT_NITER, sweep=DEFAULT_SWEEP,
-                    omega=1.0, kpow=100, nnzr_max=50, tau_pref=0.01, tau_post=0.0):
+def setup_sfsai_nsy(lvl, **kwargs):
     """Set up static nonsymmetric FSAI smoothing."""
 
+    # Set default parameters (only for advanced users)
+    pattern_power = 100
+    postfiltration_tol = 0.0
+
+    # Set default parameters
+    verbosity = 0
+    prefiltration_tol = 0.01
+    average_nnzr = 30
+    iterations=DEFAULT_NITER
+    sweep=DEFAULT_SWEEP
+    # Extract arguments from kwargs
+    if 'verbosity' in kwargs:
+        verbosity = kwargs['verbosity']
+    if 'prefiltration_tol' in kwargs:
+        prefiltration_tol = kwargs['prefiltration_tol']
+    if 'average_nnzr' in kwargs:
+        average_nnzr = kwargs['average_nnzr']
+    if 'iterations' in kwargs:
+        iterations = kwargs['iterations']
+    if 'sweep' in kwargs:
+        sweep = kwargs['sweep']
+
+    if verbosity > 0:
+        print( "Computing Non-Symmetric Static FSAI" )
+
+
     matrix_asformat(lvl, 'A', 'csr')
-    FL, FU = relaxation.sfsai_nsy(lvl.Acsr, kpow, nnzr_max, tau_pref, tau_post)
+    FL, FU = relaxation.sfsai_nsy(lvl.Acsr, verbosity, pattern_power, average_nnzr,
+                                  prefiltration_tol, postfiltration_tol)
 
     # Compute omega
     def applyFLAFU(x):
@@ -715,21 +741,23 @@ def setup_sfsai_nsy(lvl, iterations=DEFAULT_NITER, sweep=DEFAULT_SWEEP,
     FLAFU = LinearOperator(lvl.Acsr.shape, applyFLAFU, dtype=lvl.Acsr.dtype)
     vals = sparse.linalg.eigs(FLAFU, k=1, which='LR', maxiter=100, tol=1.e-3, return_eigenvectors=False)
     vals = np.real_if_close(vals)
-    #print( "Max eig: ", vals[0] )
 
     # Attention: has to work as both pre and post smoother
     # For pre smoothing, x has to be initialized to zeros
     if (vals[0] > 2.0):
         omega = 1.9 / vals[0]
-        print('Omega: ',omega)
         def smoother(A, x, b):
             for i in range(0, iterations):
                 x += omega*(FU*(FL*(b - A*x)))
     else:
-        print('Omega: 1.0')
+        omega = 1.0
         def smoother(A, x, b):
             for i in range(0, iterations):
                 x += (FU*(FL*(b - A*x)))
+
+    if verbosity > 0:
+        print('Omega: {:10.2f}'.format(omega))
+        print('-------------------------------------------------------')
 
     return smoother
 

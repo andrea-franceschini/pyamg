@@ -8,7 +8,8 @@
 
 // MAIN PROGRAM
 template <class I, class R>
-int sfsai_nsy( I kpow,
+int sfsai_nsy( I verbosity,
+               I kpow,
                I nnzr_max,
                R tau_pref,
                R tau_post,
@@ -30,7 +31,8 @@ int sfsai_nsy( I kpow,
    // --- Compute the preconditioner pattern ---------------------------------------------
 
    int mmax;
-   ierr = mk_pattern(kpow,tau_pref,nnzr_max,nn_A,nt_A,iat_A,ja_A,coef_A,mmax,iat_FL,ja_FL_size,ja_FL);
+   ierr = mk_pattern(verbosity,kpow,tau_pref,nnzr_max,nn_A,nt_A,iat_A,ja_A,coef_A,mmax,
+                     iat_FL,ja_FL_size,ja_FL);
    if (ierr != 0) return ierr;
 
    // --- Compute the preconditioner coefficients ----------------------------------------

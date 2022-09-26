@@ -10,6 +10,7 @@ namespace py = pybind11;
 
 template <class I, class R>
 int _sfsai_nsy(
+              I verbosity,
                    I kpow,
                I nnzr_max,
                R tau_pref,
@@ -47,6 +48,7 @@ int _sfsai_nsy(
     R *_coef_FU = py_coef_FU.mutable_data();
 
     return sfsai_nsy <I, R>(
+                verbosity,
                      kpow,
                  nnzr_max,
                  tau_pref,
@@ -78,7 +80,7 @@ PYBIND11_MODULE(sfsai_nsy, m) {
     options.disable_function_signatures();
 
     m.def("sfsai_nsy", &_sfsai_nsy<int, double>,
-        py::arg("kpow"), py::arg("nnzr_max"), py::arg("tau_pref"), py::arg("tau_post"), py::arg("nn_A"), py::arg("nt_A"), py::arg("iat_A").noconvert(), py::arg("ja_A").noconvert(), py::arg("coef_A").noconvert(), py::arg("iat_FL").noconvert(), py::arg("ja_FL").noconvert(), py::arg("coef_FL").noconvert(), py::arg("iat_FU").noconvert(), py::arg("ja_FU").noconvert(), py::arg("coef_FU").noconvert(),
+        py::arg("verbosity"), py::arg("kpow"), py::arg("nnzr_max"), py::arg("tau_pref"), py::arg("tau_post"), py::arg("nn_A"), py::arg("nt_A"), py::arg("iat_A").noconvert(), py::arg("ja_A").noconvert(), py::arg("coef_A").noconvert(), py::arg("iat_FL").noconvert(), py::arg("ja_FL").noconvert(), py::arg("coef_FL").noconvert(), py::arg("iat_FU").noconvert(), py::arg("ja_FU").noconvert(), py::arg("coef_FU").noconvert(),
 R"pbdoc(
 MAIN PROGRAM)pbdoc");
 

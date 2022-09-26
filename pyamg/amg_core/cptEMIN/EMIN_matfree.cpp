@@ -30,6 +30,7 @@
  *
  * Input:
  *
+ * verb:                            verbosity level.
  * np:                              number of openMP threads.
  * itmax:                           number of EnerMinCG iterations.
  * condmax:                         max conditioning allowed for a B block.
@@ -65,10 +66,10 @@
  *
  *****************************************************************************************/
 
-int EMIN_matfree(const int np, const int itmax, const double en_tol, const double condmax,
-                 const int prec_type, const int nn, const int nn_C, const int ntv,
-                 const int nt_A, const int nt_P, const int nt_patt, const int *fcnode,
-                 const int *iat_A, const int *ja_A, const double *coef_A,
+int EMIN_matfree(const int verb, const int np, const int itmax, const double en_tol,
+                 const double condmax, const int prec_type, const int nn, const int nn_C,
+                 const int ntv, const int nt_A, const int nt_P, const int nt_patt,
+                 const int *fcnode, const int *iat_A, const int *ja_A, const double *coef_A,
                  const int *iat_Pin, const int *ja_Pin, const double *coef_Pin,
                  const int *iat_patt, const int *ja_patt, const double *const *TV,
                  int *iat_Pout, int *ja_Pout, double *coef_Pout, double *info){
@@ -193,10 +194,10 @@ int EMIN_matfree(const int np, const int itmax, const double en_tol, const doubl
    }
    double Tr_A = 0;
    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   #if COMP_ENRG
-   // Compute Trace of A
-   Tr_A = cpt_Trace_Acc(np,nn,fcnode,iat_A,ja_A,coef_A);
-   #endif
+   if (verb >= 2){
+      // Compute Trace of A
+      Tr_A = cpt_Trace_Acc(np,nn,fcnode,iat_A,ja_A,coef_A);
+   }
    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
    int iter;
@@ -207,16 +208,13 @@ int EMIN_matfree(const int np, const int itmax, const double en_tol, const doubl
    // Allocate prolongation correction
    double *DP = (double*) malloc( nt_patt*sizeof(double) );
    if (DP == nullptr) return ierr = 1;
-   ierr = DEFL_PCG_matfree(np,prec_type,nn,nn_C,nt_patt,ntv,perm,iperm,D_inv,
+   ierr = DEFL_PCG_matfree(verb,np,prec_type,nn,nn_C,nt_patt,ntv,perm,iperm,D_inv,
                            iat_A,ja_A,coef_A,Tr_A,iat_patt,ja_patt,iat_Tpatt,ja_Tpatt,
                            mat_Q,coef_P0,vec_f,itmax,en_tol,iter,DP);
    if (ierr != 0) return ierr = 4;
    end = std::chrono::system_clock::now();
    elaps_sec = end - start;
    double time_PCG = elaps_sec.count();
-   //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-   std::cout << "PCG TIME "<< time_PCG << std::endl;
-   //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
    // Update prolongation with DP
    #pragma omp parallel for num_threads(np)

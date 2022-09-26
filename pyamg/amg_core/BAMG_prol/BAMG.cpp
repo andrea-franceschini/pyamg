@@ -183,7 +183,7 @@ int BAMG ( const BAMG_params &params, const iReg nthreads, iReg nn_L, iReg nn_C,
    //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
    if (params.verbosity >= VLEV_MEDIUM){
       iReg tot_count = 0;
-      std::cout << "---------------------------" << std::endl;
+      std::cout << "-------------------------------------------------------" << std::endl;
       for (iReg i = 0; i <= params.dist_max+2; i++) tot_count += dist_count[i];
       rExt r_tot_count = 100.0 / static_cast<rExt>(tot_count);
       for (iReg i = 0; i < params.dist_max; i++)
@@ -200,7 +200,7 @@ int BAMG ( const BAMG_params &params, const iReg nthreads, iReg nn_L, iReg nn_C,
       std::cout << "# of nodes without neighbours:   " << std::setw(12) <<
       dist_count[params.dist_max+2] << " | " << std::setprecision(2) << std::setw(6) <<
       static_cast<rExt>(dist_count[params.dist_max+2]) * r_tot_count << "%" << std::endl;
-      std::cout << "---------------------------" << std::endl;
+      std::cout << "-------------------------------------------------------" << std::endl;
    }
 
    return ierr;

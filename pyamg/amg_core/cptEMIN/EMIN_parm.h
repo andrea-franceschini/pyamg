@@ -4,5 +4,3 @@
 
 //#define DUMP_PREC true
 #define DUMP_PREC false
-#define COMP_ENRG true
-#define EMIN_CGTOL 1.e-6
