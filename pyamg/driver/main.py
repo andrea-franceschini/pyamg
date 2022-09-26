@@ -8,9 +8,10 @@ from pyamg.util.linalg import norm
 
 from scipy.sparse import isspmatrix_csr
 
-from read_bin_CJ import read_bin_csr, read_bin_rbm
+from read_bin import read_bin_csr, read_bin_rbm
 
-##
+#-----------------------------------------------------------------------------------------
+
 # Define function to run one test of a solver with initial guess x0 and RHS b
 
 def run_test(solver, b, x0, cycle, krylov, tol, maxiter):
@@ -56,97 +57,96 @@ def run_test(solver, b, x0, cycle, krylov, tol, maxiter):
  
 
 #-----------------------------------------------------------------------------------------
+
+# Init random seed
+numpy.random.seed(10)
+
 # Define inputs
-matname_in = 'MATRICES/Cubo_35199.csr.npy'
-rbmname_in = 'MATRICES/Cubo_35199.RBM.npy'
+matname_in = 'MATRICES/Cubo_246389.csr.npy'
+rbmname_in = 'MATRICES/Cubo_246389.RBM.npy'
+#matname_in = 'MATRICES/Cubo_35199.csr.npy'
+#rbmname_in = 'MATRICES/Cubo_35199.RBM.npy'
+#matname_in = 'MATRICES/Cubo_4820.csr.npy'
+#rbmname_in = 'MATRICES/Cubo_4820.RBM.npy'
 #matname_in = 'MATRICES/Cubo_591.csr.npy'
 #rbmname_in = 'MATRICES/Cubo_591.RBM.npy'
-
-#matname_in = 'MATRICES/Cubo_246389.csr.npy'
-#rbmname_in = 'MATRICES/Cubo_246389.RBM.npy'
-
-#matname_in = 'A.npy'
-#rbmname_in = 'TV.npy'
-
 
 # Read matrix and test space from file
 A = read_bin_csr(matname_in)
 B = read_bin_rbm(rbmname_in)
-#print(isspmatrix_csr(A))
 
-#############
-#from scipy.io import mmwrite
-#mmwrite("A.mtx", A)
-#############
-
-#n = 10
-#A = gallery.poisson( (n,n) )#, format='csc')
+# Generate Poisson from gallery
+#A = gallery.poisson( (n,n), format='csr')
 #B = numpy.ones((A.shape[0],))
-BH = B.copy()       # left near nullspace
-#A = A.tocsr()
 
-numpy.random.seed(10)
-#b = numpy.random.rand(A.shape[0],1)
-b = numpy.ones((A.shape[0],))
+# Create the left near nullspace
+BH = B.copy()
+
+# Set rhs and initial solution
+b = numpy.ones((A.shape[0],1))
 x0 = zeros_like(b)
 
 ##
 # Solver Parameters
 
 max_levels=15
-#max_coarse=150
-max_coarse=500
-#max_coarse=15
+max_coarse=150
 coarse_solver='pinv'
 coarse_solver='cholesky'
 symmetry='hermitian'
 
 cycle='V'
-maxiter=500
+maxiter=100
+tol=1e-8
 krylov= 'cg'
 #krylov= 'gmres'
 
-tol=1e-8
+#-----------------------------------------------------------------------------------------
 
-##
-# Choose Solver Parameters
+# Set Solver Parameters
+
+# Method to improve tentative prolongation
 smooth = ('energy', {'krylov':'cg', 'maxiter':4, 'degree':1, 'weighting':'diagonal' })
+smooth = None
+smooth = ('energy')
 
-strength = ('symmetric', {'theta' : 0.0})
+# Strength of connection
 #strength = ('classical', {'theta' : 0.35})
 #strength = ('evolution', {'k':2, 'epsilon':2.0, 'symmetrize_measure':True, 'B':None})
+strength = ('symmetric', {'theta' : 0.0})
 
+# Maximum Indepent Set
+CF_for_enmin = 'PMIS'
+#CF_for_enmin = 'RS'
+#CF_for_enmin = 'standard'
+
+# Method to improve initial test space
 #improve_candidates = [ ('block_gauss_seidel', {'sweep':'symmetric', 'iterations':10}) ]
-#improve_candidates = [ ('gauss_seidel', {'sweep':'symmetric', 'iterations':1}) ]
+improve_candidates = [ ('gauss_seidel', {'sweep':'symmetric', 'iterations':1}) ]
 improve_candidates = None
 
-#pre_smoother =('jacobi', {'iterations':1})
-#post_smoother=('jacobi', {'iterations':1})
+# Pre and Post smoother
 pre_smoother =('sfsai_nsy', {'sweep':'symmetric', 'iterations':1})
 post_smoother=('sfsai_nsy', {'sweep':'symmetric', 'iterations':1})
+#pre_smoother =('jacobi', {'iterations':1})
+#post_smoother=('jacobi', {'iterations':1})
 #pre_smoother =('gauss_seidel', {'sweep':'forward', 'iterations':1})
 #post_smoother=('gauss_seidel', {'sweep':'backward', 'iterations':1})
 #pre_smoother =('block_gauss_seidel', {'sweep':'forward', 'iterations':1})
 #post_smoother=('block_gauss_seidel', {'sweep':'backward', 'iterations':1})
 
-CF_for_enmin = 'PMIS'
-#CF_for_enmin = 'RS'
-#CF_for_enmin = 'standard'
+# Treatment of diagonal dominant rows
+diag_dom = (True, {'theta':1.1})
 
-CF_for_RN = 'standard'
-
-##
 # Run two tests
-dom = (True,{'theta':1.1})
 
 print("\n----------   energymin_cf_solver ----------")
 start = time.time()
 enmin_cf = energymin_cf_solver(A, B=B, BH=BH, strength=strength, smooth=smooth,
              improve_candidates=improve_candidates, aggregate=CF_for_enmin,
              presmoother=pre_smoother, postsmoother=post_smoother, keep=True,
-             max_levels=max_levels, max_coarse=max_coarse,
-             coarse_solver=coarse_solver, symmetry=symmetry, diagonal_dominance=dom,
-             opts={'BAMG','EMIN_AC'})
+             max_levels=max_levels, max_coarse=max_coarse, diagonal_dominance=diag_dom,
+             coarse_solver=coarse_solver, symmetry=symmetry, opts={'BAMG','EMIN_AC'})
 end = time.time(); setup_time = end-start
         
 run_test(enmin_cf, b, x0, cycle, krylov, tol, maxiter)
