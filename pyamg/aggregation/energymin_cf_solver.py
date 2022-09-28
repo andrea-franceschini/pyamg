@@ -409,6 +409,8 @@ def _extend_hierarchy(levels, strength, aggregate, smooth, improve_candidates,
         classical_CF = True
         Cpts = (splitting == 1).nonzero()[0]
         Fpts = (splitting == 0).nonzero()[0]
+        print('# of nodes:    ',C.shape[0])
+        print('# coarse nodes:',Cpts.shape[0])
         I_C = speye(A.shape[0], A.shape[1], format='csr')
         I_F = I_C.copy()
         I_F.data[Cpts] = 0.0

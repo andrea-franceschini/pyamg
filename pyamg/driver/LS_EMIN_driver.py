@@ -59,12 +59,14 @@ def run_test(solver, b, x0, cycle, krylov, tol, maxiter):
 numpy.random.seed(10)
 
 # Define inputs
-#matname_in = 'MATRICES/Cubo_35199.csr.npy'
-#rbmname_in = 'MATRICES/Cubo_35199.RBM.npy'
+#matname_in = 'MATRICES/Cubo_246389.csr.npy'
+#rbmname_in = 'MATRICES/Cubo_246389.RBM.npy'
+matname_in = 'MATRICES/Cubo_35199.csr.npy'
+rbmname_in = 'MATRICES/Cubo_35199.RBM.npy'
 #matname_in = 'MATRICES/Cubo_4820.csr.npy'
 #rbmname_in = 'MATRICES/Cubo_4820.RBM.npy'
-matname_in = 'MATRICES/Cubo_591.csr.npy'
-rbmname_in = 'MATRICES/Cubo_591.RBM.npy'
+#matname_in = 'MATRICES/Cubo_591.csr.npy'
+#rbmname_in = 'MATRICES/Cubo_591.RBM.npy'
 
 # Read matrix and test space from file
 A = read_bin_csr(matname_in)
@@ -102,7 +104,7 @@ krylov= 'cg'
 # Method to improve tentative prolongation
 #smooth = ('energy', {'krylov':'cg', 'maxiter':4, 'degree':1, 'weighting':'diagonal' })
 #smooth = None
-smooth = ('EMIN', {'average_nnzr':31, 'power_pattern':1, 'itmax':6, 'tol':0.01, 'verbosity':2})
+smooth = ('EMIN', {'average_nnzr':30, 'power_pattern':1, 'itmax':5, 'tol':0.01, 'verbosity':2})
 
 # Strength of connection
 #strength = ('classical', {'theta' : 0.35})

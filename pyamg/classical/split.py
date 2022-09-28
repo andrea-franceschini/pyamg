@@ -376,6 +376,11 @@ def MIS(G, weights, maxiter=None):
             raise ValueError('maxiter must be >= 0')
 
         fn(G.shape[0], G.indptr, G.indices, -1, 1, 0, mis, weights, maxiter)
+    
+    # Force empty rows to remain F-points
+    row_length = G.indptr[1:] - G.indptr[:-1]
+    empty_rows = (row_length == 0).nonzero()[0]
+    mis[empty_rows] = 0
 
     return mis
 
