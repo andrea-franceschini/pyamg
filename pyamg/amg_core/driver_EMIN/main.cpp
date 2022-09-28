@@ -229,43 +229,20 @@ char line[1024];
    // --- Local variables for time printing ----------------------------------------------
    chrono::duration<double> elapsed_seconds;
 
-   /*
    // *** Improve prolongation through Energy Minimization *******************************
 
    //---START-------------------------------
    auto start = chrono::system_clock::now();
    //---------------------------------------
 
-   int *iat_Pnew;
-   int *ja_Pnew;
-   double *coef_Pnew;
-   double emin_info[EMIN_INFO_SZ];
-   ierr = EMIN_ImpProl(np,itmax,condmax,maxwgt,prec_type,sol_type,min_lfil,max_lfil,
-                       D_lfil,nn_A,nn_C,ntv,nt_A,nt_P,nt_patt,fcnode,iat_A,ja_A,coef_A,
-                       iat_P,ja_P,coef_P,iat_patt,ja_patt,TV,iat_Pnew,ja_Pnew,coef_Pnew,
-                       emin_info);
-
-   //---STOP--------------------------------
-   auto end = chrono::system_clock::now();
-   elapsed_seconds = end - start;
-   //---------------------------------------
-
-   cout << endl << endl;
-   cout << "Time for Enengy Minimization [sec]: " << elapsed_seconds.count() << endl;
-   cout << endl;
-
-   //cout << "Printing Final Prolongation" << endl;
-   //FILE *pfile = fopen("Prol_EMIN.csr","w"); if (!pfile) exit(1);
-   //wrCSRmat(pfile,false,nn_P,iat_Pnew,ja_Pnew,coef_Pnew);
-   //fclose(pfile);
-   */
-
+   int verbose = 2;
    double tol = 0.01;
    double info[8];
    int *iat_Pnew = (int*) malloc( (nn_A+1)*sizeof(int) );
    int *ja_Pnew = (int*) malloc( (nt_patt+nn_C)*sizeof(int) );
    double *coef_Pnew = (double*) malloc( (nt_patt+nn_C)*sizeof(double) );
-   ierr = cptEMIN( itmax,
+   ierr = cptEMIN( verbose,
+                   itmax,
                    tol,
                    condmax,
                    prec_type,
@@ -287,7 +264,16 @@ char line[1024];
                    coef_Pnew, nt_patt+nn_C,
                    info, 8 );
    cout << "ierr " << ierr << endl;
-   
+
+   //---STOP--------------------------------
+   auto end = chrono::system_clock::now();
+   elapsed_seconds = end - start;
+   //---------------------------------------
+
+   cout << endl << endl;
+   cout << "Time for Enengy Minimization [sec]: " << elapsed_seconds.count() << endl;
+   cout << endl;
+
    cout << "Printing Final Prolongation" << endl;
    FILE *pfile = fopen("Prol_EMIN.csr","w"); if (!pfile) exit(1);
    wrCSRmat(pfile,false,nn_P,iat_Pnew,ja_Pnew,coef_Pnew);

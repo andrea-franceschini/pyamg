@@ -333,7 +333,7 @@ int gather_B_QR(const int np, const double condmax, const int nn, const int nn_C
                   int rank_BB = 1;
                   while (SIGMA[0]/SIGMA[rank_BB] < condmax){
                      rank_BB++;
-                     if (rank_BB == ntv){
+                     if (rank_BB == std::min( ntv, nr_BB_loc )){
                         rank_BB++;
                         break;
                      }
