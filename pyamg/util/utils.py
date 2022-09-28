@@ -1669,6 +1669,7 @@ def eliminate_diag_dom_nodes(A, C, theta=1.02):
                                                    dtype=A_abs) - D_abs)))
     #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
     print('# Diag Dom rows:',np.count_nonzero(diag_dom_rows))
+    print('Diag Dom rows:',diag_dom_rows)
     #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
     # Account for BSR matrices and translate diag_dom_rows from dofs to nodes
@@ -1689,7 +1690,6 @@ def eliminate_diag_dom_nodes(A, C, theta=1.02):
 
     del A_abs
     return C
-
 
 def remove_diagonal(S):
     """Remove the diagonal of the matrix S.
