@@ -564,6 +564,7 @@ def _extend_hierarchy(levels, strength, aggregate, smooth, improve_candidates,
         kpow = 1
         itmax_EMIN = 5
         tol_EMIN = 0.01
+        pattern_EMIN = {'symmetric':{'theta':0.001}}
         # Extract arguments from kwargs
         if 'verbosity' in kwargs:
             verbosity_EMIN = kwargs['verbosity']
@@ -575,25 +576,62 @@ def _extend_hierarchy(levels, strength, aggregate, smooth, improve_candidates,
             itmax_EMIN = kwargs['itmax']
         if 'tol' in kwargs:
             tol_EMIN = kwargs['tol']
+        if 'pattern' in kwargs:
+            pattern_EMIN = kwargs['pattern']
 
+        #FFFFFFFFFFFFFF
+        print(pattern_EMIN)
+        algo = pattern_EMIN[0]
+        DICT = pattern_EMIN[1]
+        print(algo)
+        print(DICT)
+        print(DICT.keys())
+        #FFFFFFFFFFFFFF
         if verbosity_EMIN > 0:
             print('Improving tentative prolongation through energy minimization')
 
+        # Create a specific strength of connection matrix for constructing the
+        # prolongation pattern
+        fn, kwargs = unpack_arg(pattern_EMIN)
+        if fn == 'symmetric':
+            C_p = symmetric_strength_of_connection(A, **kwargs)
+        elif fn == 'classical':
+            C_p = classical_strength_of_connection(A, **kwargs)
+        elif fn == 'distance':
+            C_p = distance_strength_of_connection(A, **kwargs)
+        elif fn in ('ode', 'evolution'):
+            if 'B' in kwargs:
+                C_p = evolution_strength_of_connection(A, **kwargs)
+            else:
+                C_p = evolution_strength_of_connection(A, B, **kwargs)
+        elif fn == 'energy_based':
+            C_p = energy_based_strength_of_connection(A, **kwargs)
+        elif fn == 'predefined':
+            C_p = kwargs['C'].tocsr()
+        elif fn == 'algebraic_distance':
+            C_p = algebraic_distance(A, **kwargs)
+        elif fn == 'affinity':
+            C_p = affinity_distance(A, **kwargs)
+        elif fn is None:
+            C_p = A.tocsr()
+        else:
+            raise ValueError(f'Unrecognized strength of connection method: {str(fn)}')
+
         fcnodes = -np.ones((C.shape[0],), dtype=np.int32)
         fcnodes[Cpts] = range( 0, len(Cpts) )
-        pattern = mkPatt(C,T,avg_nnzr,kpow)
+        pattern = mkPatt(C_p,T,avg_nnzr,kpow)
         if verbosity_EMIN > 0:
             print('Pattern avg nnzr (including C nodes): {:5.2f}'.format(
                   pattern.nnz/pattern.shape[0]))
 
-        # Remove coaese rows from pattern
+        # Remove coarse rows from pattern
         [ii,jj,pp] = find(pattern)
         pos = np.where(fcnodes[ii]<0)[0]
         pattern = csr_matrix((pp[pos], (ii[pos],jj[pos])),shape=pattern.shape)
 
         #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
         if DEBUG_AC:
-            mmwrite('C_' + str(len(levels)) + '.mtx',C)
+            mmwrite('C_' + str(len(levels)) + '.mtx',C_p)
             mmwrite('PATT_' + str(len(levels)) + '.mtx',pattern)
             mmwrite('A_' + str(len(levels)) + '.mtx',A)
             mmwrite('T_' + str(len(levels)) + '.mtx',T)

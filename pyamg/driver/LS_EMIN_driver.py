@@ -104,7 +104,8 @@ krylov= 'cg'
 # Method to improve tentative prolongation
 #smooth = ('energy', {'krylov':'cg', 'maxiter':4, 'degree':1, 'weighting':'diagonal' })
 #smooth = None
-smooth = ('EMIN', {'average_nnzr':30, 'power_pattern':1, 'itmax':5, 'tol':0.01, 'verbosity':2})
+smooth = ('EMIN', {'average_nnzr':30, 'power_pattern':1, 'itmax':5, 'tol':0.01, 'verbosity':2,
+          'pattern':('symmetric', {'theta' : 0.01})})
 
 # Strength of connection
 #strength = ('classical', {'theta' : 0.35})

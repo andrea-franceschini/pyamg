@@ -38,11 +38,15 @@ def mkPatt(S,P0_in,avg_nnzr,kpow):
     P0 = P0_in.copy()
     P0.data[0:] = 1
     P_out = P0
+    nnzr = P_out.nnz / P_out.shape[0]
+    print('Power {:2d} nnzr {:10.3f}'.format(0,nnzr))
     for i in range(kpow):
         # Perform the product times S
         P_out = S*P_out
         # Filter P_out
         P_out = FilterMat(P_out,avg_nnzr)
+        nnzr = P_out.nnz / P_out.shape[0]
+        print('Power {:2d} nnzr {:10.3f}'.format(i+1,nnzr))
 
     # Transform P_out in a zero pattern
     P_out.data[0:] = 1
