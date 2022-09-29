@@ -280,6 +280,17 @@ def symmetric_strength_of_connection(A, theta=0):
     if not sparse.isspmatrix_csr(A) and not sparse.isspmatrix_bsr(A):
         raise TypeError('expected csr_matrix or bsr_matrix')
 
+    #@@@@@@@@@@@@@@@ CARLO @@@@@@@@@@@@@@@
+    #from scipy.io import mmwrite
+    #if A.shape[0] < 100000 and A.shape[0] > 7000:
+    #    X = A.copy()
+    #    DD = 1.0 / np.sqrt(X.diagonal())
+    #    DD = diags(DD)
+    #    X = abs(DD*X*DD)
+    #    X.data = np.abs(X.data)
+    #    mmwrite('SoC_orig',X)
+    #@@@@@@@@@@@@@@@ CARLO @@@@@@@@@@@@@@@
+
     if sparse.isspmatrix_csr(A):
         # if theta == 0:
         #     return A
@@ -322,6 +333,8 @@ def symmetric_strength_of_connection(A, theta=0):
         DD = diags(DD)
         S = abs(DD*S*DD)
         S.data = np.abs(S.data)
+        #if S.shape[0] < 100000 and S.shape[0] > 7000:
+        #    mmwrite('SoC_filt',S)
         #@@@@@@@@@@@@@@@ CARLO @@@@@@@@@@@@@@@
 
     else:

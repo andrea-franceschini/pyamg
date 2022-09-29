@@ -410,7 +410,8 @@ def _extend_hierarchy(levels, strength, aggregate, smooth, improve_candidates,
         Cpts = (splitting == 1).nonzero()[0]
         Fpts = (splitting == 0).nonzero()[0]
         print('# of nodes:    ',C.shape[0])
-        print('# coarse nodes:',Cpts.shape[0])
+        print('# of COARSE nodes: ',Cpts.shape[0])
+        print('# of FINE nodes:   ',Fpts.shape[0])
         I_C = speye(A.shape[0], A.shape[1], format='csr')
         I_F = I_C.copy()
         I_F.data[Cpts] = 0.0
@@ -504,6 +505,7 @@ def _extend_hierarchy(levels, strength, aggregate, smooth, improve_candidates,
             # Perform a QR on the candidates (generally it has only little impact)
             from scipy.linalg import qr
             Q, R = qr(B,mode='economic')
+            levels[-1].B = Q
             B = Q
 
             # Compute prolongation
@@ -554,7 +556,7 @@ def _extend_hierarchy(levels, strength, aggregate, smooth, improve_candidates,
                                          **kwargs)
     elif fn == 'EMIN':
         # Set default parameters (only for advanced users)
-        condmax_EMIN = 1.e10
+        condmax_EMIN = 1.e5
         precType = 'jacobi'
         #  Set default parameters
         verbosity_EMIN = 0

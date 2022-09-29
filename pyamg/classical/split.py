@@ -187,7 +187,30 @@ def PMIS(S):
     S = remove_diagonal(S)
     weights, G, S, T = _preprocess(S)
     del S, T
-    return MIS(G, weights)
+    
+    #@@@@@@@@@@@@@@ PATCH BY LUKE @@@@@@@@@@@@@@@
+    # - return MIS(G, weights)
+
+    splitting = MIS(G, weights)
+    _set_dirichlet(G, splitting)
+
+    #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+    #from scipy.io import mmwrite
+    #if G.shape[0] > 100000:
+    #    print('STAMPO 1')
+    #    mmwrite('G_1',G,symmetry='general')
+    #    np.savetxt('split_1',splitting,fmt='%4d')
+    #    np.savetxt('wgt_1',weights,fmt='%8.2f')
+    #elif G.shape[0] > 7000:
+    #    print('STAMPO 2')
+    #    mmwrite('G_2',G,symmetry='general')
+    #    np.savetxt('split_2',splitting,fmt='%d')
+    #    np.savetxt('wgt_2',weights,fmt='%8.2f')
+    #print('ESCO')
+    #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+    return splitting
+    #@@@@@@@@@@@@@@ PATCH BY LUKE @@@@@@@@@@@@@@@
 
 
 def PMISc(S, method='JP'):
@@ -377,10 +400,13 @@ def MIS(G, weights, maxiter=None):
 
         fn(G.shape[0], G.indptr, G.indices, -1, 1, 0, mis, weights, maxiter)
     
-    # Force empty rows to remain F-points
-    row_length = G.indptr[1:] - G.indptr[:-1]
-    empty_rows = (row_length == 0).nonzero()[0]
-    mis[empty_rows] = 0
+    #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+###    # JACOB PATCH
+###    # Force empty rows to remain F-points
+###    row_length = G.indptr[1:] - G.indptr[:-1]
+###    empty_rows = (row_length == 0).nonzero()[0]
+###    mis[empty_rows] = 0
+    #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
     return mis
 
@@ -447,3 +473,9 @@ def _preprocess(S, coloring_method=None):
                    / num_colors)
 
     return (weights, G, S, T)
+
+def _set_dirichlet(G, splitting):
+    # For rows of zero-length (Dirichlet), set as Fine.
+    I = np.where(np.diff(G.indptr)==0)[0]
+    print('# of disconnected nodes found: ',I.size)
+    splitting[I] = 0
