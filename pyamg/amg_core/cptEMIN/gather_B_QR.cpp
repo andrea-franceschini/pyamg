@@ -7,6 +7,7 @@
 #include "inl_blas1.h"
 #include <iostream>
 #include <stdio.h>
+#define DEBUG_LOC 0
 //////////////////////////////////
 
 #include "DebEnv.h"
@@ -38,7 +39,11 @@ int gather_B_QR(const int np, const double condmax, const int nn, const int nn_C
 // g E tau POSSONO ESSERE DEI VETTORI LOCALI DI DIMENSIONE NTV CHE POI VENGONO CANCELLATI
 //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
    //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-   //FILE *bbf = fopen("LOG_gather","w");
+   FILE *of;
+   if (DEBUG_LOC){
+      of = fopen("LOG_gather","w");
+   }
+   fflush(of);
    //FILE *of = fopen("P0_prima","w");
    //for (int i = 0; i < iat_patt[nn]; i++) fprintf(of,"%20.11e\n",coef_P0[i]);
    //fclose(of);
@@ -184,24 +189,24 @@ int gather_B_QR(const int np, const double condmax, const int nn, const int nn_C
                cblas_dgemv(CblasColMajor,CblasTrans,nr_BB_loc,ntv,-1.0,&(BB_scr[ind_BB]),
                            nr_BB_loc,&(coef_P0[istart_patt]),1,1.0,&(g_scr[ind_g]),1);
                //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-               if (DEBUG){
-                  fprintf(DebEnv.t_logfile[mythid],"-----------------------------------\n");
-                  fprintf(DebEnv.t_logfile[mythid],"GLOBAL ROW OF A (ICOL): %d\n",icol);
-                  fprintf(DebEnv.t_logfile[mythid],"Size of B_loc: %d %d\n",nr_BB_loc,ntv);
-                  fprintf(DebEnv.t_logfile[mythid],"\nB_loc:\n");
+               if (DEBUG_LOC){
+                  fprintf(of,"-----------------------------------\n");
+                  fprintf(of,"GLOBAL ROW OF A (ICOL): %d\n",icol);
+                  fprintf(of,"Size of B_loc: %d %d\n",nr_BB_loc,ntv);
+                  fprintf(of,"\nB_loc:\n");
                   for (int i = 0; i < nr_BB_loc; i++){
                      for (int j = 0; j < ntv; j++)
-                        fprintf(DebEnv.t_logfile[mythid]," %17.10e",BB_scr[ind_BB+j*nr_BB_loc+i]);
-                     fprintf(DebEnv.t_logfile[mythid],"\n");
+                        fprintf(of," %17.10e",BB_scr[ind_BB+j*nr_BB_loc+i]);
+                     fprintf(of,"\n");
                   }
-                  fprintf(DebEnv.t_logfile[mythid],"\nP0 init:\n");
+                  fprintf(of,"\nP0 init:\n");
                   for (int j = 0; j < nr_BB_loc; j++)
-                     fprintf(DebEnv.t_logfile[mythid]," %15.6e",coef_P0[istart_patt+j]);
-                  fprintf(DebEnv.t_logfile[mythid],"\nrhs:\n");
+                     fprintf(of," %15.6e",coef_P0[istart_patt+j]);
+                  fprintf(of,"\nrhs:\n");
                   for (int j = 0; j < ntv; j++)
-                     fprintf(DebEnv.t_logfile[mythid]," %15.6e",g_scr[ind_g+j]);
-                  fprintf(DebEnv.t_logfile[mythid],"\n");
-                  fflush(DebEnv.t_logfile[mythid]);
+                     fprintf(of," %15.6e",g_scr[ind_g+j]);
+                  fprintf(of,"\n");
+                  fflush(of);
                }
                //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
@@ -227,12 +232,12 @@ int gather_B_QR(const int np, const double condmax, const int nn, const int nn_C
                      min_DR = std::min(min_DR,std::abs(BB_scr[ind_BB+kk*l_ll+kk]));
                   }
                   //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@2
-                  if (DEBUG){
-                     fprintf(DebEnv.t_logfile[mythid],"DIAG R: ");
+                  if (DEBUG_LOC){
+                     fprintf(of,"DIAG R: ");
                      for (int kk = 0; kk < l_mm; kk++)
-                        fprintf(DebEnv.t_logfile[mythid]," %15.6e",std::abs(BB_scr[ind_BB+kk*l_ll+kk]));
-                     fprintf(DebEnv.t_logfile[mythid],"\n");
-                     fprintf(DebEnv.t_logfile[mythid],
+                        fprintf(of," %15.6e",std::abs(BB_scr[ind_BB+kk*l_ll+kk]));
+                     fprintf(of,"\n");
+                     fprintf(of,
                              "%6d max_DR %15.6e min_DR %15.6e COND_1 %15.6e\n",icol,
                              max_DR,min_DR,max_DR/min_DR);
                   }
@@ -259,7 +264,7 @@ int gather_B_QR(const int np, const double condmax, const int nn, const int nn_C
                      if ( PRINT_LOC_INFO ) std::cout << icol <<
                         " conditioning larger than threshold: "
                         << max_DR / min_DR << " > " << condmax << std::endl;
-                     if (DEBUG) fprintf(DebEnv.t_logfile[mythid],
+                     if (DEBUG_LOC) fprintf(of,
                             "%6d COND_LRG: max %15.6e min %15.6e cond %15.6e\n",
                             icol,max_DR,min_DR,max_DR / min_DR);
                      //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -290,18 +295,18 @@ int gather_B_QR(const int np, const double condmax, const int nn, const int nn_C
                      // Compute the number of entries of Q
                      nnz_BB = nr_BB_loc*ntv;
                      //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-                     if (DEBUG){
-                        fprintf(DebEnv.t_logfile[mythid],"\nQ:\n");
+                     if (DEBUG_LOC){
+                        fprintf(of,"\nQ:\n");
                         for (int i = 0; i < nr_BB_loc; i++){
                            for (int j = 0; j < std::min(ntv,nr_BB_loc); j++)
-                              fprintf(DebEnv.t_logfile[mythid]," %17.10e",BB_scr[ind_BB+j*nr_BB_loc+i]);
-                           fprintf(DebEnv.t_logfile[mythid],"\n");
+                              fprintf(of," %17.10e",BB_scr[ind_BB+j*nr_BB_loc+i]);
+                           fprintf(of,"\n");
                         }
-                        fprintf(DebEnv.t_logfile[mythid],"\nDP:\n");
+                        fprintf(of,"\nDP:\n");
                         for (int j = 0; j < nr_BB_loc; j++)
-                          fprintf(DebEnv.t_logfile[mythid]," %15.6e",coef_P0[istart_patt+j]);
-                        fprintf(DebEnv.t_logfile[mythid],"\n");
-                        fflush(DebEnv.t_logfile[mythid]);
+                          fprintf(of," %15.6e",coef_P0[istart_patt+j]);
+                        fprintf(of,"\n");
+                        fflush(of);
                      }
                      //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
@@ -331,36 +336,37 @@ int gather_B_QR(const int np, const double condmax, const int nn, const int nn_C
 
                   // Compute the rank of BB using SIGMA
                   int rank_BB = 1;
-                  while (SIGMA[0]/SIGMA[rank_BB] < condmax){
-                     rank_BB++;
-                     if (rank_BB == std::min( ntv, nr_BB_loc )){
+                  if (nr_BB_loc > 1){
+                     while (SIGMA[0] < condmax*std::abs(SIGMA[rank_BB])){
                         rank_BB++;
-                        break;
+                        if (rank_BB == std::min( ntv, nr_BB_loc )){
+                           break;
+                        }
                      }
                   }
-                  rank_BB--;
 
                   //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-                  if (DEBUG){
-                     if (nr_BB_loc < ntv) fprintf(DebEnv.t_logfile[mythid],"FAT B\n");
-                     //fprintf(DebEnv.t_logfile[mythid],"\nRANK B: %d\n",rank_BB);
-                     fprintf(DebEnv.t_logfile[mythid],"\n%6d COND_RID %15.6e RANK B %3d\n",icol,
+                  if (DEBUG_LOC){
+                     if (rank_BB < nr_BB_loc) fprintf(of,"QUI MERDA\n",rank_BB);
+                     if (nr_BB_loc < ntv) fprintf(of,"FAT B\n");
+                     //fprintf(of,"\nRANK B: %d\n",rank_BB);
+                     fprintf(of,"\n%6d COND_RID %15.6e RANK B %3d\n",icol,
                              SIGMA[0]/SIGMA[rank_BB],rank_BB);
-                     fprintf(DebEnv.t_logfile[mythid],"\nU = Q:\n");
+                     fprintf(of,"\nU = Q:\n");
                      for (int i = 0; i < nr_BB_loc; i++){
                         for (int j = 0; j < std::min(ntv,nr_BB_loc); j++)
-                           fprintf(DebEnv.t_logfile[mythid]," %15.6e",BB_scr[ind_BB+j*nr_BB_loc+i]);
-                        fprintf(DebEnv.t_logfile[mythid],"\n");
+                           fprintf(of," %15.6e",BB_scr[ind_BB+j*nr_BB_loc+i]);
+                        fprintf(of,"\n");
                      }
-                     fprintf(DebEnv.t_logfile[mythid],"\nSIGMA:\n");
+                     fprintf(of,"\nSIGMA:\n");
                      for (int j = 0; j < std::min(ntv,nr_BB_loc); j++)
-                        fprintf(DebEnv.t_logfile[mythid]," %15.6e",SIGMA[j]);
-                     fprintf(DebEnv.t_logfile[mythid],"\n");
-                     fprintf(DebEnv.t_logfile[mythid],"\nVT:\n");
+                        fprintf(of," %15.6e",SIGMA[j]);
+                     fprintf(of,"\n");
+                     fprintf(of,"\nVT:\n");
                      for (int i = 0; i < std::min(nr_BB_loc,ntv); i++){
                         for (int j = 0; j < ntv; j++)
-                           fprintf(DebEnv.t_logfile[mythid]," %15.6e",VT[j*ntv+i]);
-                        fprintf(DebEnv.t_logfile[mythid],"\n");
+                           fprintf(of," %15.6e",VT[j*ntv+i]);
+                        fprintf(of,"\n");
                      }
                   }
                   //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -377,12 +383,12 @@ int gather_B_QR(const int np, const double condmax, const int nn, const int nn_C
                               &(BB_scr[ind_BB]),nr_BB_loc,work,1,1.0,
                               &(coef_P0[istart_patt]),1);
                   //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-                  if (DEBUG){
-                     fprintf(DebEnv.t_logfile[mythid],"\nDP:\n");
+                  if (DEBUG_LOC){
+                     fprintf(of,"\nDP:\n");
                      for (int j = 0; j < nr_BB_loc; j++)
-                       fprintf(DebEnv.t_logfile[mythid]," %15.6e",coef_P0[istart_patt+j]);
-                     fprintf(DebEnv.t_logfile[mythid],"\n");
-                     fflush(DebEnv.t_logfile[mythid]);
+                       fprintf(of," %15.6e",coef_P0[istart_patt+j]);
+                     fprintf(of,"\n");
+                     fflush(of);
                   }
                   //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
@@ -420,12 +426,13 @@ int gather_B_QR(const int np, const double condmax, const int nn, const int nn_C
 
    } // End of parallel region
    //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-   //of = fopen("P0_dopo","w");
-   //for (int i = 0; i < iat_patt[nn]; i++) fprintf(of,"%20.11e\n",coef_P0[i]);
-   //fclose(of);
+   //FILE *pf = fopen("P0_dopo","w");
+   //for (int i = 0; i < iat_patt[nn]; i++) fprintf(pf,"%20.11e\n",coef_P0[i]);
+   //fclose(pf);
    //cout << "FATTO" << endl;
    //exit(0);
    //fclose(bbf);
+   if (DEBUG_LOC) fclose(of);
    //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
    // Free shared scratches

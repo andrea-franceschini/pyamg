@@ -556,7 +556,7 @@ def _extend_hierarchy(levels, strength, aggregate, smooth, improve_candidates,
                                          **kwargs)
     elif fn == 'EMIN':
         # Set default parameters (only for advanced users)
-        condmax_EMIN = 1.e5
+        condmax_EMIN = 1.e5 
         precType = 'jacobi'
         #  Set default parameters
         verbosity_EMIN = 0
@@ -579,14 +579,6 @@ def _extend_hierarchy(levels, strength, aggregate, smooth, improve_candidates,
         if 'pattern' in kwargs:
             pattern_EMIN = kwargs['pattern']
 
-        #FFFFFFFFFFFFFF
-        print(pattern_EMIN)
-        algo = pattern_EMIN[0]
-        DICT = pattern_EMIN[1]
-        print(algo)
-        print(DICT)
-        print(DICT.keys())
-        #FFFFFFFFFFFFFF
         if verbosity_EMIN > 0:
             print('Improving tentative prolongation through energy minimization')
 
