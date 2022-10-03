@@ -564,7 +564,7 @@ def _extend_hierarchy(levels, strength, aggregate, smooth, improve_candidates,
         kpow = 1
         itmax_EMIN = 5
         tol_EMIN = 0.01
-        pattern_EMIN = {'symmetric':{'theta':0.001}}
+        pattern_EMIN = ('symmetric', {'theta':0.001})
         # Extract arguments from kwargs
         if 'verbosity' in kwargs:
             verbosity_EMIN = kwargs['verbosity']
