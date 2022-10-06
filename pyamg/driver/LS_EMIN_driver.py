@@ -61,10 +61,10 @@ numpy.random.seed(10)
 # Define inputs
 #matname_in = 'MATRICES/Cubo_246389.csr.npy'
 #rbmname_in = 'MATRICES/Cubo_246389.RBM.npy'
-matname_in = 'MATRICES/Cubo_35199.csr.npy'
-rbmname_in = 'MATRICES/Cubo_35199.RBM.npy'
-#matname_in = 'MATRICES/Cubo_4820.csr.npy'
-#rbmname_in = 'MATRICES/Cubo_4820.RBM.npy'
+#matname_in = 'MATRICES/Cubo_35199.csr.npy'
+#rbmname_in = 'MATRICES/Cubo_35199.RBM.npy'
+matname_in = 'MATRICES/Cubo_4820.csr.npy'
+rbmname_in = 'MATRICES/Cubo_4820.RBM.npy'
 #matname_in = 'MATRICES/Cubo_591.csr.npy'
 #rbmname_in = 'MATRICES/Cubo_591.RBM.npy'
 
@@ -110,7 +110,7 @@ smooth = ('EMIN', {'average_nnzr':30, 'power_pattern':1, 'itmax':5, 'tol':0.01, 
 # Strength of connection
 #strength = ('classical', {'theta' : 0.35})
 #strength = ('evolution', {'k':2, 'epsilon':2.0, 'symmetrize_measure':True, 'B':None})
-strength = ('symmetric', {'theta' : 0.0})
+strength = ('symmetric', {'theta' : 0.001})
 
 # Maximum Indepent Set
 #CF_for_enmin = 'RS'
@@ -133,9 +133,9 @@ prolong = ( 'least_squares', {'dist':6, 'max_row_norm':5.0, 'verbosity':2} )
 #post_smoother=('gauss_seidel', {'sweep':'backward', 'iterations':1})
 #pre_smoother =('block_gauss_seidel', {'sweep':'forward', 'iterations':1})
 #post_smoother=('block_gauss_seidel', {'sweep':'backward', 'iterations':1})
-pre_smoother  =('sfsai_nsy', {'sweep':'symmetric', 'iterations':1, 'average_nnzr':60,
+pre_smoother  =('sfsai_nsy', {'sweep':'symmetric', 'iterations':1, 'average_nnzr':100,
                 'prefiltration_tol':0.01, 'verbosity':2})
-post_smoother =('sfsai_nsy', {'sweep':'symmetric', 'iterations':1, 'average_nnzr':60,
+post_smoother =('sfsai_nsy', {'sweep':'symmetric', 'iterations':1, 'average_nnzr':100,
                 'prefiltration_tol':0.01, 'verbosity':2})
 
 # Treatment of diagonal dominant rows

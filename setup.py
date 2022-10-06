@@ -44,10 +44,14 @@ ext_modules += [
                                'pyamg/amg_core/sfsai_nsy/merge_row_patt.cpp',
                                'pyamg/amg_core/sfsai_nsy/mk_pattern.cpp',
                                'pyamg/amg_core/sfsai_nsy/power_patt.cpp',
-                               'pyamg/amg_core/sfsai_nsy/transp_Patt.cpp'],
+                               'pyamg/amg_core/sfsai_nsy/transp.cpp'],
                       include_dirs=['pyamg/amg_core/common',
-                                    'pyamg/amg_core/sfsai_nsy'],
-                      libraries=['lapacke'],
+                                    'pyamg/amg_core/sfsai_nsy',
+                                    '/u/janna/GITLAB/HPC_SparsePack/VER_2.0/Binary/lapack/include'],
+                      library_dirs=['/u/janna/GITLAB/HPC_SparsePack/VER_2.0/Binary/lapack'],
+                      libraries=['lapacke','lapack','cblas','refblas','gfortran'],
+                      extra_compile_args=['-fopenmp'],
+                      extra_link_args=['-fopenmp'],
                      )
     ]
 
@@ -79,8 +83,10 @@ ext_modules += [
                                'pyamg/amg_core/cptEMIN/UinvDP_spmat.cpp',
                                'pyamg/amg_core/cptEMIN/wrCSRmat.cpp'],
                       include_dirs=['pyamg/amg_core/common',
+                                    '/u/janna/GITLAB/HPC_SparsePack/VER_2.0/Binary/lapack/include',
                                     'pyamg/amg_core/cptEMIN'],
-                      libraries=['lapacke'],
+                      library_dirs=['/u/janna/GITLAB/HPC_SparsePack/VER_2.0/Binary/lapack'],
+                      libraries=['lapacke','lapack','cblas','refblas','gfortran'],
                       extra_compile_args=['-fopenmp'],
                       extra_link_args=['-fopenmp'],
                      )
@@ -105,8 +111,10 @@ ext_modules += [
                                'pyamg/amg_core/BAMG_prol/ProlStripe_BAMG.cpp',
                                'pyamg/amg_core/BAMG_prol/Reduce_IntSet.cpp'],
                       include_dirs=['pyamg/amg_core/common',
+                                    '/u/janna/GITLAB/HPC_SparsePack/VER_2.0/Binary/lapack/include',
                                     'pyamg/amg_core/BAMG_prol'],
-                      libraries=['lapacke'],
+                      library_dirs=['/u/janna/GITLAB/HPC_SparsePack/VER_2.0/Binary/lapack'],
+                      libraries=['lapacke','lapack','cblas','refblas','gfortran'],
                       extra_compile_args=['-fopenmp'],
                       extra_link_args=['-fopenmp'],
                      )

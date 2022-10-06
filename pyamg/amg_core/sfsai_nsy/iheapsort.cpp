@@ -2,12 +2,12 @@
 //----------------------------------------------------------------------------------------
 
 /*
- * Sorts an integer array x1 in such a way that x1(i) <= x1(i+1)
+ * Sorts an integer array x1 in such a way that x1(i) <= x1(i+1) 
  *
- * > @brief Compute the gradient of the Kaporin Number
+ * > @brief Compute the gradient of the Kaporin Number 
  *
- * > @param[in]     n  # of components of x1
- * ! @param[inout]  x1 array of integers
+ * > @param[in]     n  # of components of x1 
+ * ! @param[inout]  x1 array of integers 
  *
  * > @author Carlo Janna
  * ! @author Giovanni Isotton
