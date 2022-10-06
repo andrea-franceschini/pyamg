@@ -661,7 +661,9 @@ def _extend_hierarchy(levels, strength, aggregate, smooth, improve_candidates,
         fn, kwargs = unpack_arg(smooth[len(levels)-1])
         if fn == 'energy':
             R = energy_prolongation_smoother(AH, TH, C, BH, levels[-1].BH,
-                                             Cpt_params=Cpt_params, **kwargs)
+                                             Cpt_params=Cpt_params,
+                                             force_fit_candidates=classical_CF,
+                                             **kwargs)
             R = R.H
         elif fn is None:
             R = T.H
