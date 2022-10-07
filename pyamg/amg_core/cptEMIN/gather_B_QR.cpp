@@ -42,8 +42,8 @@ int gather_B_QR(const int np, const double condmax, const int nn, const int nn_C
    FILE *of;
    if (DEBUG_LOC){
       of = fopen("LOG_gather","w");
+      fflush(of);
    }
-   fflush(of);
    //FILE *of = fopen("P0_prima","w");
    //for (int i = 0; i < iat_patt[nn]; i++) fprintf(of,"%20.11e\n",coef_P0[i]);
    //fclose(of);
@@ -347,7 +347,7 @@ int gather_B_QR(const int np, const double condmax, const int nn, const int nn_C
 
                   //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
                   if (DEBUG_LOC){
-                     if (rank_BB < nr_BB_loc) fprintf(of,"QUI MERDA\n",rank_BB);
+                     if (rank_BB < nr_BB_loc) fprintf(of,"ERROR! %i\n",rank_BB);
                      if (nr_BB_loc < ntv) fprintf(of,"FAT B\n");
                      //fprintf(of,"\nRANK B: %d\n",rank_BB);
                      fprintf(of,"\n%6d COND_RID %15.6e RANK B %3d\n",icol,

@@ -319,7 +319,8 @@ def symmetric_strength_of_connection(A, theta=0):
             # the strength of connection matrix is based on the
             # Frobenius norms of the blocks
             data = (np.conjugate(A.data) * A.data).reshape(-1, R * C)
-            data = data.sum(axis=1)
+            # ANDREA: added sqrt to compute a real norm
+            data = np.sqrt(data.sum(axis=1))
             A = sparse.csr_matrix((data, A.indices, A.indptr),
                                   shape=(int(M / R), int(N / C)))
             return symmetric_strength_of_connection(A, theta)

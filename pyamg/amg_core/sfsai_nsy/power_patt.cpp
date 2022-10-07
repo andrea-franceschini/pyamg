@@ -28,7 +28,8 @@ int power_patt(const int np, const int kpow, const int nnzr_max, const int nn,
    mmax = 0;
    #pragma omp parallel num_threads(np) reduction(max:mmax)
    {
-      int mmax_loc,ind;
+      int mmax_loc = 1;
+      int ind = 0;
 
       // Create the row partition
       int mythid = omp_get_thread_num();
@@ -58,8 +59,6 @@ int power_patt(const int np, const int kpow, const int nnzr_max, const int nn,
       if (ierr != 0) goto mid_point_check;
 
       // Initialization
-      mmax_loc = 1;
-      ind = 0;
       my_iat_P[0] = 0;
       fill_n(IWN,nn,0);
 
