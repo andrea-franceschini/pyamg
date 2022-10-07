@@ -47,7 +47,7 @@ int power_patt(const int np, const int kpow, const int nnzr_max, const int nn,
 
       // Allocate local scratches with a tentative size for ja_P
       int nt_loc = iat[firstrow+mynrows] - iat[firstrow];
-      int my_nt_P_max = min(6,kpow)*nt_loc;
+      int my_nt_P_max = min(6,kpow)*nt_loc + nn;
       int *my_iat_P = (int*) malloc((mynrows+1) * sizeof(int));
       int *my_ja_P = (int*) malloc(my_nt_P_max * sizeof(int));
       int *IWN = (int*) malloc(nn * sizeof(int));
@@ -106,8 +106,10 @@ int power_patt(const int np, const int kpow, const int nnzr_max, const int nn,
             // Check the available memory
             if (ind + nn > my_nt_P_max){
                // Compute expansion factor
-               double exp_fac = 1.2*static_cast<double>(mynrows)/static_cast<double>(irow);
-               my_nt_P_max = static_cast<int>(exp_fac*static_cast<double>(my_nt_P_max));
+               double exp_fac = 1.2 * static_cast<double>(mynrows) /
+                                      static_cast<double>(min(1,irow));
+               my_nt_P_max = static_cast<int>(exp_fac*static_cast<double>(my_nt_P_max)) +
+                             nn;
                //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
                //cout << "The available memory for the pattern has been reached at row: " << irow
                //     << endl;

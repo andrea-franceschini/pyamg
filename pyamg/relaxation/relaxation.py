@@ -1103,6 +1103,7 @@ def sfsai_nsy(Ain, verbosity, kpow, nnzr_max, tau_pref, tau_post):
                               iat_FL,ja_FL,coef_FL,iat_FU,ja_FU,coef_FU)
     if (ierr != 0):
         from scipy.io import mmwrite
+        print('ERROR in sfsai set-up: ',ierr)
         mmwrite( "A_FSAIerror.mtx", A )
         raise ValueError('Error in sfsai_nsy')
         return -1
